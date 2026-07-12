@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BOSS直聘岗位分析助手 - 校对基础简历</title>
+    <link rel="stylesheet" href="resume-editor.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <div>
+        <p>BOSS直聘岗位分析助手</p>
+        <h1>校对基础简历</h1>
+        <span id="file-meta">正在读取本地草稿…</span>
+      </div>
+      <div class="header-actions">
+        <button id="add-section" class="secondary-button" type="button">添加区块</button>
+        <button id="save-resume" class="primary-button" type="button">保存并完成同步</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="guidance">
+        <h2>校对提示</h2>
+        <ol>
+          <li>检查姓名、联系方式和时间。</li>
+          <li>修正 PDF 换行或区块识别错误。</li>
+          <li>不要在这里补充不存在的经历。</li>
+          <li>保存后才会用于岗位分析。</li>
+        </ol>
+        <p>简历仅保存在当前浏览器扩展中。</p>
+      </aside>
+
+      <section class="editor-card">
+        <div id="empty" class="empty" hidden>没有可编辑的简历草稿，请返回插件上传 PDF。</div>
+        <div id="sections"></div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script src="resume-editor.js"></script>
+  </body>
+</html>

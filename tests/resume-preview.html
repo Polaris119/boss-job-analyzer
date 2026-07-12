@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PDF 预览测试</title>
+    <link rel="stylesheet" href="../resume.css">
+  </head>
+  <body>
+    <aside class="toolbar">
+      <div><strong>PDF 导出预览</strong><span>测试数据</span></div>
+      <button id="print" type="button">打印 / 保存 PDF</button>
+    </aside>
+    <main id="resume" class="resume-page"></main>
+    <script>
+      window.chrome = {
+        storage: {
+          local: {
+            get: async () => ({
+              printResume: {
+                job: { company: "示例科技", title: "AI Agent 工程师" },
+                themeColor: "#6b4fa1",
+                resume: {
+                  fullName: "张三",
+                  headline: "AI Agent 工程师",
+                  contactLine: "南京 · example@example.com",
+                  summary: "后端工程师，具备 AI 应用、知识库和工作流项目经验。",
+                  sections: [
+                    { title: "专业技能", items: ["Python、TypeScript、MySQL、Redis", "大模型 API、RAG、工具调用"] },
+                    { title: "工作经历", items: ["示例科技｜后端工程师｜2022–至今\n负责业务平台和 AI 应用开发，参与接口设计、服务治理与上线维护。"] },
+                    { title: "项目经历", items: ["企业知识库问答\n完成文档切分、向量检索和答案引用链路，支持内部资料检索。"] },
+                    { title: "教育经历", items: ["示例大学｜计算机科学与技术｜本科"] }
+                  ]
+                }
+              }
+            })
+          }
+        }
+      };
+    </script>
+    <script src="../resume.js"></script>
+  </body>
+</html>

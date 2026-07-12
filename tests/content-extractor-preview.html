@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>BOSS 分栏岗位读取测试</title></head>
+  <body>
+    <aside class="rec-job-list">
+      <article class="job-card-box"><span class="job-name">AI应用开发 周末双休</span><span class="company-name">左侧列表公司</span></article>
+    </aside>
+    <main>
+      <button id="switch-job" type="button">切换右侧岗位</button>
+      <output id="captured-job">尚未读取</output>
+      <div class="job-detail-box">
+        <span class="job-name">RAG 平台工程师</span>
+        <span class="job-salary">20-30K</span>
+        <ul class="tag-list"><li>南京</li><li>3-5年</li></ul>
+        <p class="desc">职位描述：负责企业知识库、向量检索、召回评测以及大模型应用的工程化建设与持续优化。</p>
+        <div class="boss-info-attr">甲方科技 · 招聘经理</div>
+      </div>
+    </main>
+    <script>
+      window.__capturedStorage = {};
+      window.chrome = {
+        runtime: { id: "preview-extension", sendMessage: async () => ({ ok: true }) },
+        storage: { local: {
+          get: async (key) => typeof key === "string" ? { [key]: window.__capturedStorage[key] } : window.__capturedStorage,
+          remove: async (key) => { delete window.__capturedStorage[key]; },
+          set: async (value) => {
+            Object.assign(window.__capturedStorage, value);
+            if (value.currentJob) document.getElementById("captured-job").textContent = `${value.currentJob.company}|${value.currentJob.title}`;
+          }
+        } }
+      };
+      document.getElementById("switch-job").addEventListener("click", () => {
+        document.querySelector(".job-detail-box .job-name").textContent = "Agent 应用工程师";
+        document.querySelector(".job-detail-box .desc").textContent = "职位描述：负责智能体工作流、工具调用、长期记忆、效果评测以及线上服务稳定性建设。";
+        document.querySelector(".job-detail-box .boss-info-attr").textContent = "乙方智能 · 技术负责人";
+      });
+    </script>
+    <script src="../salary.js"></script>
+    <script src="../content.js"></script>
+  </body>
+</html>

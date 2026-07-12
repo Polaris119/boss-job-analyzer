@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工作台预览</title><link rel="stylesheet" href="../workbench.css"></head>
+  <body>
+    <header class="workbench-header"><div><p>BOSS直聘岗位分析助手</p><h1>岗位分析工作台</h1><span>历史记录、并行队列与失败重试</span></div><div class="runner-controls"><label>并行任务<select id="concurrency"><option value="1">1 个</option><option value="2">2 个（推荐）</option><option value="3">3 个</option></select></label><button id="toggle-queue">暂停启动新任务</button><button id="clear-history" class="clear-history-button">清空历史记录</button></div></header>
+    <main class="workbench-shell"><section id="recovery-notice" class="notice" hidden></section><section class="keep-open-note"><strong>请保持工作台标签页打开</strong><span>切换到其他标签不会暂停；关闭此页面会中断当前请求，重新打开后从最近完成阶段重试。</span></section><section class="stats-grid"><article><span>全部</span><strong id="stat-total">0</strong></article><article><span>等待</span><strong id="stat-queued">0</strong></article><article><span>分析中</span><strong id="stat-running">0</strong></article><article><span>已完成</span><strong id="stat-completed">0</strong></article><article><span>失败</span><strong id="stat-failed">0</strong></article></section><section class="task-panel"><div class="panel-head"><div><h2>公司与岗位任务</h2><p id="runner-status">队列正在运行</p></div><div class="filters"><button class="filter active" data-filter="all">全部</button><button class="filter" data-filter="active">进行中</button><button class="filter" data-filter="completed">已完成</button><button class="filter" data-filter="failed">失败</button></div></div><div id="task-list" class="task-list"></div><div id="empty" class="empty" hidden></div></section></main><div id="toast" class="toast" hidden></div>
+    <script>
+      const base={job:{company:"示例科技",salary:"20-35K",jobMeta:"南京 · 3-5年"},contentHash:"c9b58b73b0e2",aiConfig:{model:"deepseek-chat"},createdAt:new Date().toISOString(),error:""};
+      window.__WORKBENCH_PREVIEW_TASKS__=[
+        {...base,id:"1",status:"running",stage:"match",job:{...base.job,title:"AI Agent 工程师"}},
+        {...base,id:"2",status:"queued",stage:"match",job:{...base.job,title:"RAG 应用工程师",company:"另一家公司"}},
+        {...base,id:"3",status:"completed",stage:"complete",job:{...base.job,title:"大模型应用工程师"}},
+        {...base,id:"4",status:"failed",stage:"resume",error:"模型接口触发速率限制，请稍后重试。",job:{...base.job,title:"后端开发工程师"}}
+      ];
+      window.chrome={storage:{local:{get:async()=>({}),set:async()=>{}},session:{get:async()=>({})}},tabs:{create:async()=>{}},runtime:{getURL:(value)=>value}};
+    </script>
+    <script src="../salary.js"></script><script type="module" src="../workbench.js"></script>
+  </body>
+</html>

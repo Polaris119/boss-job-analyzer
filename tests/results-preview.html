@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>结果页预览</title><link rel="stylesheet" href="../results.css"></head>
+  <body>
+    <header class="result-header"><div><p>BOSS直聘岗位分析助手 · 分析完成</p><h1 id="job-title">岗位分析结果</h1><span id="job-meta"></span></div><span class="complete-badge">✓ 已完成</span></header>
+    <main class="result-shell">
+      <nav class="top-tabs"><button class="top-tab active" data-tab="report">分析报告</button><button class="top-tab" data-tab="resume">定制简历</button></nav>
+      <section id="report-panel" class="panel"><div class="panel-toolbar"><div><h2>岗位分析报告</h2><p>匹配、建议和学习路线统一管理</p></div><button id="download-markdown" class="primary-button">下载 Markdown 报告</button></div><div class="report-nav"><a href="#match-section">岗位匹配</a><a href="#suggestion-section">优化建议</a><a href="#roadmap-section">学习路线</a></div><section id="match-section" class="content-card"></section><section id="suggestion-section" class="content-card"></section><section id="roadmap-section" class="content-card"></section></section>
+      <section id="resume-panel" class="panel" hidden><div class="panel-toolbar"><div><h2>定制简历</h2><p>校对、编辑后再导出 PDF</p></div><div class="toolbar-actions"><label class="theme-control">主题色 <input id="resume-theme-color" type="color" value="#6b4fa1"></label><button id="add-resume-section" class="secondary-button">新增区块</button><button id="save-result" class="secondary-button">保存修改</button><button id="export-pdf" class="primary-button">导出 PDF</button></div></div><div id="resume-fields" class="resume-editor"></div></section>
+      <div id="empty" class="empty" hidden></div>
+    </main><div id="toast" class="toast" hidden></div>
+    <script>
+      const demo = { id:"demo", job:{title:"AI Agent 工程师",company:"示例科技",salary:"15-25K",url:"https://example.com"}, createdAt:new Date().toISOString(), resumeThemeColor:"#6b4fa1", analysis:{jobSummary:"岗位重点关注 Agent、RAG 和工程落地能力。",requirements:[{requirement:"具备 RAG 项目经验",priority:"must",status:"partial",evidence:["知识库问答项目"],rationale:"有实践，但缺少效果指标"}],suggestions:[{title:"强化项目成果",detail:"补充职责边界和可验证结果。",evidence:"项目经历"}],skillGaps:[{skill:"Agent 评测",priority:"high",reason:"岗位强调稳定性"}],roadmap:[{stage:"第一阶段",duration:"1 周",goals:["搭建评测集","实现回归测试"],deliverable:"可重复执行的评测报告"}],interviewFocus:["准备 RAG 召回效果的优化案例"]}, optimizedResume:{fullName:"张三",headline:"AI Agent 工程师",contactLine:"南京 · example@example.com",summary:"后端工程师，具备 AI 应用项目经验。",sections:[{title:"项目经历",items:["企业知识库问答：完成文档切分、检索和答案引用链路。"]}],pendingConfirmations:[]}};
+      window.__RESULTS_PREVIEW_RECORD__=demo;
+      window.chrome={storage:{local:{get:async()=>({legacyHistoryMigratedV1:true}),set:async()=>{}}},tabs:{create:async()=>{}},runtime:{getURL:(value)=>value}};
+    </script>
+    <script src="../salary.js"></script><script type="module" src="../results.js"></script>
+  </body>
+</html>

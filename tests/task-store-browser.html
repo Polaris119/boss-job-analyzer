@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>任务存储测试</title></head>
+  <body><h1>任务存储测试</h1><pre id="result">正在测试…</pre>
+    <script type="module">
+      import { claimQueuedTask, clearTasks, createTask, findExactTask, getTaskStats, putTask } from "../task-store.mjs";
+      try {
+        await clearTasks();
+        const task = await createTask({
+          job: { id:"boss:test", jobKey:"boss:test", contentHash:"hash-v1", title:"测试岗位" },
+          resumeSnapshot: { sections:[{ title:"技能", text:"Python" }] },
+          aiConfig: { provider:"test", baseUrl:"https://example.com", model:"demo" }
+        });
+        const duplicate = await findExactTask("boss:test", "hash-v1");
+        const claimed = await claimQueuedTask(task.id);
+        claimed.status = "completed";
+        claimed.stage = "complete";
+        await putTask(claimed);
+        const stats = await getTaskStats();
+        document.getElementById("result").textContent = JSON.stringify({ duplicateFound:duplicate.id===task.id, claimedStatus:claimed.status, stats }, null, 2);
+        await clearTasks();
+      } catch (error) {
+        document.getElementById("result").textContent = `ERROR: ${error.message}`;
+      }
+    </script>
+  </body>
+</html>

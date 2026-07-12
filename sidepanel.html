@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BOSS直聘岗位分析助手</title>
+    <link rel="stylesheet" href="sidepanel.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BOSS直聘求职辅助工具</p>
+        <h1>BOSS直聘岗位分析助手</h1>
+      </div>
+      <span class="version">MVP</span>
+    </header>
+
+    <main>
+      <section class="card status-card">
+        <div class="status-row">
+          <span>基础简历</span>
+          <strong id="resume-status" class="badge muted">未上传</strong>
+        </div>
+        <p id="resume-detail" class="secondary">上传文本型 PDF，在独立页面校对并保存。</p>
+        <div class="button-row compact-row">
+          <label class="secondary-button file-button">
+            <input id="resume-file" type="file" accept="application/pdf,.pdf">
+            上传 PDF 简历
+          </label>
+          <button id="edit-resume" class="text-button" type="button" hidden>打开简历校对页</button>
+          <button id="delete-resume" class="text-button danger-text-button" type="button" hidden>删除基础简历</button>
+        </div>
+        <p id="resume-feedback" class="inline-feedback" role="status" hidden></p>
+      </section>
+
+      <section class="card workspace-card">
+        <div class="status-row">
+          <span>岗位工作台</span>
+          <strong id="queue-summary" class="badge muted">暂无任务</strong>
+        </div>
+        <p class="secondary">历史记录、并行队列和失败重试都在工作台管理。</p>
+        <button id="open-workbench" class="secondary-button full-button" type="button">打开岗位工作台</button>
+      </section>
+
+      <section class="card status-card">
+        <div class="status-row">
+          <span>当前岗位</span>
+          <strong id="job-status" class="badge muted">未读取</strong>
+        </div>
+        <p id="job-detail" class="secondary">请在岗位详情页点击“AI 分析当前岗位”。</p>
+      </section>
+
+      <section class="card action-card">
+        <button id="analyze" class="primary-button" type="button" disabled>加入分析队列</button>
+        <p id="action-help" class="secondary center">需要先保存简历、读取岗位并配置 AI。</p>
+        <p id="action-feedback" class="inline-feedback" role="status" aria-live="polite" hidden></p>
+        <p id="error" class="error" role="alert" hidden></p>
+      </section>
+
+      <details class="card settings-card" open>
+        <summary>AI 接入配置</summary>
+        <div class="form-grid">
+          <label>
+            服务商模板
+            <select id="provider-template">
+              <option value="deepseek">DeepSeek</option>
+              <option value="custom">自定义 OpenAI-compatible</option>
+            </select>
+          </label>
+          <label>
+            Base URL
+            <input id="base-url" type="url" placeholder="https://api.deepseek.com">
+          </label>
+          <label>
+            Model
+            <input id="model" type="text" placeholder="deepseek-chat">
+          </label>
+          <label>
+            API Key
+            <input id="api-key" type="password" autocomplete="off" placeholder="sk-...">
+          </label>
+          <label class="checkbox-row">
+            <input id="remember-key" type="checkbox">
+            <span>在本机记住 API Key</span>
+          </label>
+          <p class="privacy-note">Key 只保存在当前浏览器扩展中，不会发送给本项目的服务器。</p>
+          <div class="button-row">
+            <button id="save-config" class="secondary-button" type="button">保存配置</button>
+            <button id="test-config" class="secondary-button" type="button">测试连接</button>
+          </div>
+          <p id="config-feedback" class="inline-feedback" role="status" aria-live="polite" hidden></p>
+        </div>
+      </details>
+    </main>
+
+    <script src="parser.js"></script>
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

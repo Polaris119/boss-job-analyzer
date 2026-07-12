@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "BOSS直聘岗位分析助手",
+  "description": "分析 BOSS 直聘岗位与个人简历，生成匹配报告、学习路线和定制简历。",
+  "version": "0.5.3",
+  "minimum_chrome_version": "114",
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
+  "host_permissions": ["https://www.zhipin.com/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "打开BOSS直聘岗位分析助手",
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.zhipin.com/*"],
+      "js": ["salary.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BOSS直聘岗位分析助手 - 分析结果</title>
+    <link rel="stylesheet" href="results.css">
+  </head>
+  <body>
+    <header class="result-header">
+      <div>
+        <p>BOSS直聘岗位分析助手 · 分析完成</p>
+        <h1 id="job-title">岗位分析结果</h1>
+        <span id="job-meta"></span>
+      </div>
+      <span class="complete-badge">✓ 已完成</span>
+    </header>
+
+    <main class="result-shell">
+      <nav class="top-tabs" aria-label="结果类型">
+        <button class="top-tab active" data-tab="report" type="button">分析报告</button>
+        <button class="top-tab" data-tab="resume" type="button">定制简历</button>
+      </nav>
+
+      <section id="report-panel" class="panel">
+        <div class="panel-toolbar">
+          <div><h2>岗位分析报告</h2><p>匹配、建议和学习路线统一管理</p></div>
+          <button id="download-markdown" class="primary-button" type="button">下载 Markdown 报告</button>
+        </div>
+        <div class="report-nav">
+          <a href="#match-section">岗位匹配</a>
+          <a href="#suggestion-section">优化建议</a>
+          <a href="#roadmap-section">学习路线</a>
+        </div>
+        <section id="match-section" class="content-card"></section>
+        <section id="suggestion-section" class="content-card"></section>
+        <section id="roadmap-section" class="content-card"></section>
+      </section>
+
+      <section id="resume-panel" class="panel" hidden>
+        <div class="panel-toolbar">
+          <div><h2>定制简历</h2><p>校对、编辑后再导出 PDF</p></div>
+          <div class="toolbar-actions">
+            <label class="theme-control">主题色 <input id="resume-theme-color" type="color" value="#087f7c"></label>
+            <button id="add-resume-section" class="secondary-button" type="button">新增区块</button>
+            <button id="save-result" class="secondary-button" type="button">保存修改</button>
+            <button id="export-pdf" class="primary-button" type="button">导出 PDF</button>
+          </div>
+        </div>
+        <div id="resume-fields" class="resume-editor"></div>
+      </section>
+
+      <div id="empty" class="empty" hidden>没有找到这次分析记录，请返回插件重新分析。</div>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script src="salary.js"></script>
+    <script type="module" src="results.js"></script>
+  </body>
+</html>
