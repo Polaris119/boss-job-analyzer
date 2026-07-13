@@ -1,12 +1,10 @@
-import { localStore } from "../../platform/chrome/storage.mjs";
 import {
   deleteTasks,
   getAllTasks,
   putTask
 } from "../../platform/indexeddb/task-repository.mjs";
-import { STORAGE_KEYS } from "../../shared/constants/storage-keys.mjs";
 import { HISTORICAL_TASK_STATUSES, TASK_STATUS } from "../../shared/constants/task-status.mjs";
-import { createLegacyTask, createTaskRecord } from "./task-model.mjs";
+import { createTaskRecord } from "./task-model.mjs";
 
 export async function createTask(input) {
   const task = createTaskRecord(input);
@@ -41,22 +39,4 @@ export async function recoverInterruptedTasks() {
     await putTask(task);
   }
   return interrupted.length;
-}
-
-export async function migrateLegacyHistory() {
-  const keys = [STORAGE_KEYS.LEGACY_HISTORY_MIGRATED, STORAGE_KEYS.LEGACY_HISTORY];
-  const stored = await localStore.get(keys);
-  if (stored[STORAGE_KEYS.LEGACY_HISTORY_MIGRATED]) return 0;
-
-  const records = stored[STORAGE_KEYS.LEGACY_HISTORY] || [];
-  const existing = await getAllTasks();
-  const existingIds = new Set(existing.map((task) => task.id));
-  let migrated = 0;
-  for (const record of records) {
-    if (!record?.id || existingIds.has(record.id)) continue;
-    await putTask(createLegacyTask(record));
-    migrated += 1;
-  }
-  await localStore.set({ [STORAGE_KEYS.LEGACY_HISTORY_MIGRATED]: true });
-  return migrated;
 }

@@ -1,6 +1,6 @@
 import { extractPdfText } from "../../features/resume/pdf-reader.mjs";
 import { splitResumeSections } from "../../features/resume/resume-parser.mjs";
-import { createTask, getTaskStats, migrateLegacyHistory } from "../../features/tasks/task-service.mjs";
+import { createTask, getTaskStats } from "../../features/tasks/task-service.mjs";
 import { ensureEndpointPermission } from "../../platform/chrome/permissions.mjs";
 import { requestAi } from "../../platform/chrome/messaging.mjs";
 import { localStore, sessionStore, subscribeToLocalStorage } from "../../platform/chrome/storage.mjs";
@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", initialize);
 
 async function initialize() {
   bindEvents();
-  await migrateLegacyHistory();
   await loadState();
   await renderStatus();
   subscribeToTaskChanges(renderQueueStats);
@@ -187,6 +186,7 @@ async function enqueueCurrentJob() {
       resumeSnapshot: clone(state.baseResume),
       aiConfig: config,
       generateResume: state.generateResume,
+      roleProfile: exact?.roleProfile ? clone(exact.roleProfile) : null,
       sourceTaskId: exact?.id || null
     });
     const message = state.generateResume

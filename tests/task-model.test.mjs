@@ -12,6 +12,9 @@ test("task creation freezes only non-secret AI configuration", () => {
   assert.equal(task.generateResume, true);
   assert.equal(task.status, "queued");
   assert.equal(task.contentHash, "hash");
+  assert.equal(task.stage, "profile");
+  assert.equal(task.roleProfile, null);
+  assert.equal(task.preparation, null);
 });
 
 test("task creation freezes disabled resume generation", () => {
@@ -22,4 +25,15 @@ test("task creation freezes disabled resume generation", () => {
     generateResume: false
   });
   assert.equal(task.generateResume, false);
+});
+
+test("task creation reuses a structured role profile for the same job", () => {
+  const roleProfile = { coreCriteria: [], expertLens: { perspective: "产品负责人" } };
+  const task = createTaskRecord({
+    job: { id: "boss:3", contentHash: "hash" },
+    resumeSnapshot: { sections: [] },
+    aiConfig: { provider: "custom", baseUrl: "https://example.com", model: "demo" },
+    roleProfile
+  });
+  assert.equal(task.roleProfile, roleProfile);
 });

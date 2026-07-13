@@ -3,8 +3,6 @@ export const STORAGE_KEYS = Object.freeze({
   BASE_RESUME: "baseResume",
   CURRENT_JOB: "currentJob",
   GENERATE_RESUME: "generateResume",
-  LEGACY_HISTORY: "analysisHistory",
-  LEGACY_HISTORY_MIGRATED: "legacyHistoryMigratedV1",
   PRINT_RESUME: "printResume",
   QUEUE_CONCURRENCY: "queueConcurrency",
   RESUME_DRAFT: "resumeDraft",

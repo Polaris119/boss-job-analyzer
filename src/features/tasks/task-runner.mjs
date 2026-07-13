@@ -1,4 +1,4 @@
-import { analyzeJobMatch, generateOptimizedResume } from "../analysis/analysis-service.mjs";
+import { analyzeJobMatch, generateOptimizedResume, generatePreparationPlan, profileJob } from "../analysis/analysis-service.mjs";
 import { localStore, sessionStore } from "../../platform/chrome/storage.mjs";
 import { putTask } from "../../platform/indexeddb/task-repository.mjs";
 import { STORAGE_KEYS } from "../../shared/constants/storage-keys.mjs";
@@ -13,24 +13,32 @@ export async function runTask(task, isCanceled) {
     task.attempts = (task.attempts || 0) + 1;
     task.error = "";
 
-    if (!task.analysis) {
-      task.stage = "match";
-      task.phase = "matching";
+    if (!task.roleProfile) {
+      await setStage(task, "profile", "profiling");
+      const roleProfile = await profileJob(task, apiKey);
+      if (isCanceled()) return;
+      task.roleProfile = roleProfile;
       await putTask(task);
-      const analysis = await analyzeJobMatch(task, apiKey);
+    }
+
+    if (!task.analysis) {
+      await setStage(task, "analysis", "analyzing");
+      const analysis = await analyzeJobMatch(task, task.roleProfile, apiKey);
       if (isCanceled()) return;
       task.analysis = analysis;
-      if (generateResume) {
-        task.stage = "resume";
-        task.phase = "generating-resume";
-      }
+      await putTask(task);
+    }
+
+    if (!task.preparation) {
+      await setStage(task, "preparation", "planning");
+      const preparation = await generatePreparationPlan(task, task.roleProfile, task.analysis, apiKey);
+      if (isCanceled()) return;
+      task.preparation = preparation;
       await putTask(task);
     }
 
     if (generateResume && !task.optimizedResume) {
-      task.stage = "resume";
-      task.phase = "generating-resume";
-      await putTask(task);
+      await setStage(task, "resume", "generating-resume");
       const optimizedResume = await generateOptimizedResume(task, task.analysis, apiKey);
       if (isCanceled()) return;
       task.optimizedResume = optimizedResume;
@@ -49,6 +57,12 @@ export async function runTask(task, isCanceled) {
     task.error = error?.message || String(error);
     await putTask(task);
   }
+}
+
+async function setStage(task, stage, phase) {
+  task.stage = stage;
+  task.phase = phase;
+  await putTask(task);
 }
 
 async function getApiKey(task) {

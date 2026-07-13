@@ -1,6 +1,6 @@
 import { clampConcurrency, selectRunnableTasks } from "../../features/tasks/queue-policy.mjs";
 import { runTask as executeTask } from "../../features/tasks/task-runner.mjs";
-import { clearHistoricalTasks, createTask, migrateLegacyHistory, recoverInterruptedTasks } from "../../features/tasks/task-service.mjs";
+import { clearHistoricalTasks, createTask, recoverInterruptedTasks } from "../../features/tasks/task-service.mjs";
 import { localStore, sessionStore } from "../../platform/chrome/storage.mjs";
 import { getCurrentTab, openExtensionPage } from "../../platform/chrome/tabs.mjs";
 import { claimQueuedTask, deleteTask, getAllTasks, getTask, putTask, subscribeToTaskChanges } from "../../platform/indexeddb/task-repository.mjs";
@@ -33,7 +33,6 @@ async function initialize() {
   }
   const currentTab = await getCurrentTab();
   if (currentTab?.id) await sessionStore.set({ [STORAGE_KEYS.WORKBENCH_TAB_ID]: currentTab.id });
-  await migrateLegacyHistory();
   state.isRunner = await acquireRunnerLock();
   const recovered = state.isRunner ? await recoverInterruptedTasks() : 0;
   const stored = await localStore.get(STORAGE_KEYS.QUEUE_CONCURRENCY);
@@ -174,6 +173,7 @@ async function reanalyze(task) {
     resumeSnapshot: clone(baseResume),
     aiConfig,
     generateResume: task.generateResume !== false,
+    roleProfile: task.roleProfile ? clone(task.roleProfile) : null,
     sourceTaskId: task.id
   });
   showToast("已使用当前基础简历加入新任务。", true);

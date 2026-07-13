@@ -47,7 +47,7 @@ export async function claimQueuedTask(taskId) {
       const task = request.result;
       if (!task || task.status !== TASK_STATUS.QUEUED) return;
       task.status = TASK_STATUS.RUNNING;
-      task.phase = task.analysis ? "generating-resume" : "matching";
+      task.phase = nextPhase(task);
       task.updatedAt = new Date().toISOString();
       store.put(task);
       claimed = task;
@@ -119,4 +119,12 @@ function requestPromise(request) {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("本地数据库操作失败"));
   });
+}
+
+function nextPhase(task) {
+  if (!task.roleProfile) return "profiling";
+  if (!task.analysis) return "analyzing";
+  if (!task.preparation) return "planning";
+  if (task.generateResume !== false && !task.optimizedResume) return "generating-resume";
+  return "completing";
 }

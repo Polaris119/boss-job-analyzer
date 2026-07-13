@@ -2,7 +2,7 @@ import { TASK_STATUS } from "../../shared/constants/task-status.mjs";
 
 export const DEFAULT_RESUME_THEME = "#087f7c";
 
-export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume = true, sourceTaskId = null }) {
+export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume = true, roleProfile = null, sourceTaskId = null }) {
   const now = new Date().toISOString();
   return {
     id: crypto.randomUUID ? crypto.randomUUID() : `task-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -18,8 +18,10 @@ export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume
     },
     status: TASK_STATUS.QUEUED,
     phase: "waiting",
-    stage: "match",
+    stage: "profile",
+    roleProfile: isReusableRoleProfile(roleProfile) ? roleProfile : null,
     analysis: null,
+    preparation: null,
     optimizedResume: null,
     resumeThemeColor: DEFAULT_RESUME_THEME,
     error: "",
@@ -33,29 +35,6 @@ export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume
   };
 }
 
-export function createLegacyTask(record) {
-  const completedAt = record.createdAt || new Date().toISOString();
-  return {
-    id: record.id,
-    jobKey: record.job?.jobKey || record.job?.id || `legacy-${record.id}`,
-    contentHash: record.job?.contentHash || record.job?.fingerprint || "legacy",
-    job: record.job || {},
-    resumeSnapshot: null,
-    generateResume: record.generateResume !== false,
-    aiConfig: null,
-    status: TASK_STATUS.COMPLETED,
-    phase: "completed",
-    stage: "complete",
-    analysis: record.analysis,
-    optimizedResume: record.optimizedResume,
-    resumeThemeColor: record.resumeThemeColor || DEFAULT_RESUME_THEME,
-    error: "",
-    attempts: 1,
-    recoveryCount: 0,
-    sourceTaskId: null,
-    createdAt: completedAt,
-    updatedAt: completedAt,
-    startedAt: completedAt,
-    completedAt
-  };
+function isReusableRoleProfile(value) {
+  return Boolean(value?.coreCriteria && value?.expertLens);
 }

@@ -4,19 +4,53 @@
   <body>
     <header class="result-header"><div><p>BOSS直聘岗位分析助手 · 分析完成</p><h1 id="job-title">岗位分析结果</h1><span id="job-meta"></span></div><span class="complete-badge">✓ 已完成</span></header>
     <main class="result-shell">
-      <nav class="top-tabs"><button class="top-tab active" data-tab="report">分析报告</button><button class="top-tab" data-tab="resume">定制简历</button></nav>
-      <section id="report-panel" class="panel"><div class="panel-toolbar"><div><h2>岗位分析报告</h2><p>匹配、建议和学习路线统一管理</p></div><button id="download-markdown" class="primary-button">下载 Markdown 报告</button></div><div class="report-nav"><a href="#match-section">岗位匹配</a><a href="#suggestion-section">优化建议</a><a href="#roadmap-section">学习路线</a></div><section id="match-section" class="content-card"></section><section id="suggestion-section" class="content-card"></section><section id="roadmap-section" class="content-card"></section></section>
+      <nav class="top-tabs"><button class="top-tab active" data-tab="report">岗位准备分析</button><button class="top-tab" data-tab="resume">定制简历</button></nav>
+      <section id="report-panel" class="panel">
+        <div class="panel-toolbar"><div><h2>岗位准备分析</h2><p>看清与心仪岗位的真实距离，以及最值得做的下一步</p></div><button id="download-markdown" class="primary-button">下载 Markdown 报告</button></div>
+        <div class="report-layout">
+          <aside class="report-sidebar"><p>报告导航</p><nav id="report-nav" class="report-nav"><a href="#overview-section" data-target="overview-section" aria-current="true">准备度概览</a><a href="#strengths-section" data-target="strengths-section">已有优势</a><a href="#gaps-section" data-target="gaps-section">关键差距</a><a href="#actions-section" data-target="actions-section">下一步行动</a><a href="#knowledge-section" data-target="knowledge-section">知识点</a><a href="#short-term-section" data-target="short-term-section">短期路线</a><a href="#long-term-section" data-target="long-term-section">长期路线</a><a href="#interview-section" data-target="interview-section">面试准备</a></nav></aside>
+          <div class="report-content"><section id="overview-section" class="content-card overview-card" data-report-section></section><section id="strengths-section" class="content-card" data-report-section></section><section id="gaps-section" class="content-card" data-report-section></section><section id="actions-section" class="content-card" data-report-section></section><section id="knowledge-section" class="content-card" data-report-section></section><section id="short-term-section" class="content-card" data-report-section></section><section id="long-term-section" class="content-card" data-report-section></section><section id="interview-section" class="content-card" data-report-section></section></div>
+        </div>
+      </section>
       <section id="resume-panel" class="panel" hidden><div class="panel-toolbar"><div><h2>定制简历</h2><p>校对、编辑后再导出 PDF</p></div><div class="toolbar-actions"><label class="theme-control">主题色 <input id="resume-theme-color" type="color" value="#6b4fa1"></label><button id="add-resume-section" class="secondary-button">新增区块</button><button id="save-result" class="secondary-button">保存修改</button><button id="export-pdf" class="primary-button">导出 PDF</button></div></div><div id="resume-fields" class="resume-editor"></div></section>
       <div id="empty" class="empty" hidden></div>
     </main><div id="toast" class="toast" hidden></div>
     <script>
-      const demo = { id:"demo", job:{title:"AI Agent 工程师",company:"示例科技",salary:"15-25K",url:"https://example.com"}, createdAt:new Date().toISOString(), resumeThemeColor:"#6b4fa1", analysis:{jobSummary:"岗位重点关注 Agent、RAG 和工程落地能力。",requirements:[{requirement:"具备 RAG 项目经验",priority:"must",status:"partial",evidence:["知识库问答项目"],rationale:"有实践，但缺少效果指标"}],suggestions:[{title:"强化项目成果",detail:"补充职责边界和可验证结果。",evidence:"项目经历"}],skillGaps:[{skill:"Agent 评测",priority:"high",reason:"岗位强调稳定性"}],roadmap:[{stage:"第一阶段",duration:"1 周",goals:["搭建评测集","实现回归测试"],deliverable:"可重复执行的评测报告"}],interviewFocus:["准备 RAG 召回效果的优化案例"]}, optimizedResume:{fullName:"张三",headline:"AI Agent 工程师",contactLine:"南京 · example@example.com",summary:"后端工程师，具备 AI 应用项目经验。",sections:[{title:"项目经历",items:["企业知识库问答：完成文档切分、检索和答案引用链路。"]}],pendingConfirmations:[]}};
-      if (new URLSearchParams(location.search).get("resume") === "0") {
-        demo.generateResume = false;
-        demo.optimizedResume = null;
+      const demo = {
+        id:"demo", job:{title:"AI Agent 工程师",company:"示例科技",salary:"15-25K",url:"https://example.com"}, createdAt:new Date().toISOString(), resumeThemeColor:"#6b4fa1",
+        roleProfile:{primaryFamily:"data_ai",specialty:"AI Agent 应用工程",seniority:"senior",hiringIntent:"把 Agent 与 RAG 能力稳定地落地到真实业务",confidence:"high"},
+        analysis:{
+          readiness:{level:"near_ready",oneLiner:"核心技术方向匹配，当前最需要补足的是评测与线上效果证据。",rationale:"已有 RAG 工程实践，但简历尚未体现评测方法和稳定性结果。",confidence:"high"},
+          strengths:[{id:"S1",title:"具备完整的 RAG 工程实践",jobNeed:"能够落地企业知识库和检索增强应用",resumeEvidence:["负责企业知识库问答的切分、检索和引用链路"],impact:"已经覆盖岗位最核心的工程场景"}],
+          gaps:[{id:"G1",type:"evidence",title:"缺少可验证的评测与稳定性结果",jobNeed:"建立 Agent 与 RAG 效果评估体系",jdEvidence:"负责 Agent 评测和线上效果优化",resumeEvidence:["简历只描述了实现链路"],impact:"面试官无法判断方案质量和优化深度",action:"为现有项目补充评测集、指标和前后对比结果"}],
+          nextActions:[{id:"A1",title:"补充项目评测证据",detail:"在知识库项目中加入评测集规模、核心指标和一次优化前后对比。",timing:"before_application",relatedGapIds:["G1"]}],
+          knowledgePoints:[{id:"K1",topic:"RAG 离线评测",mode:"practice",reason:"需要把实现经历转化为效果证据",currentState:"已有完整实现，但没有评测描述",targetDepth:"能够设计评测集、选择指标并解释优化结果",relatedGapIds:["G1"]}]
+        },
+        preparation:{
+          shortTermRoadmap:[{id:"P1",title:"建立最小可用评测集",relatedKnowledgePointIds:["K1"],duration:"1 周",objective:"为现有项目形成可验证的效果证据",concepts:["召回率","答案忠实度","回归测试"],practice:"整理 20 条业务问题并执行一次参数对比实验",deliverable:"包含问题、指标、结果和结论的评测记录",completionCriteria:"能够复现测试并解释指标变化"}],
+          longTermRoadmap:[{id:"L1",title:"积累线上评测与监控经验",relatedKnowledgePointIds:["K1"],duration:"持续积累",objective:"形成生产环境的质量保障能力",concepts:["在线反馈","质量监控"],practice:"在真实项目中跟踪失败案例并持续扩充评测集",deliverable:"版本化评测集与回归机制",completionCriteria:"每次变更都能发现质量退化"}],
+          interview:{eligible:true,reason:"当前已达到基本投递要求",questions:[{id:"Q1",type:"evidence",question:"你如何证明知识库问答项目的检索效果是可靠的？",why:"岗位明确关注 Agent 评测与稳定性",assesses:"评测设计、指标理解和问题定位能力",resumeAnchor:"企业知识库问答项目",answerOutline:["说明评测目标","介绍测试集来源","解释指标和优化结果"],followUps:["如果没有标准答案如何评估？","线上效果下降如何定位？"]}]}
+        },
+        optimizedResume:{fullName:"张三",headline:"AI Agent 工程师",contactLine:"南京 · example@example.com",summary:"后端工程师，具备 AI 应用项目经验。",sections:[{title:"项目经历",items:["企业知识库问答：完成文档切分、检索和答案引用链路。"]}],pendingConfirmations:[]}
+      };
+      const parameters = new URLSearchParams(location.search);
+      if (parameters.get("resume") === "0") { demo.generateResume=false; demo.optimizedResume=null; }
+      if (parameters.get("fit") === "ready") {
+        demo.analysis.readiness = { level:"ready", oneLiner:"当前简历已覆盖岗位核心要求，可以直接投递。", rationale:"现有项目与岗位方向一致，没有发现需要临时补齐的关键能力。", confidence:"high" };
+        demo.analysis.gaps = [];
+        demo.analysis.nextActions = [];
+        demo.analysis.knowledgePoints = [];
+        demo.preparation.shortTermRoadmap = [];
+        demo.preparation.longTermRoadmap = [];
+      }
+      if (parameters.get("fit") === "stretch") {
+        demo.roleProfile.specialty = "招聘专员";
+        demo.roleProfile.seniority = "junior";
+        demo.roleProfile.hiringIntent = "批量完成销售岗位招聘，并对招聘交付结果负责。";
+        demo.analysis.readiness = { level:"stretch", oneLiner:"核心经历方向不匹配，是当前投递的主要风险。", rationale:"你已满足基础门槛，但简历暂时无法证明招聘交付或销售成果。", confidence:"high" };
       }
       window.__RESULTS_PREVIEW_RECORD__=demo;
-      window.chrome={storage:{local:{get:async()=>({legacyHistoryMigratedV1:true}),set:async()=>{}}},tabs:{create:async()=>{}},runtime:{getURL:(value)=>value}};
+      window.chrome={storage:{local:{get:async()=>({}),set:async()=>{}}},tabs:{create:async()=>{}},runtime:{getURL:(value)=>value}};
     </script>
     <script src="../src/features/job-capture/salary-parser.js"></script><script type="module" src="../src/entries/results/controller.mjs"></script>
   </body>

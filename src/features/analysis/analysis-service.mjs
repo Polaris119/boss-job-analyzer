@@ -1,10 +1,23 @@
 import { requestAi } from "../../platform/chrome/messaging.mjs";
-import { buildAnalysisMessages, buildResumeMessages } from "./prompts.mjs";
-import { normalizeAnalysis, normalizeOptimizedResume, parseJsonResponse } from "./normalizers.mjs";
+import { buildAnalysisMessages, buildPreparationMessages, buildResumeMessages, buildRoleProfileMessages } from "./prompts.mjs";
+import { normalizeAnalysis, normalizeOptimizedResume, normalizePreparation, normalizeRoleProfile, parseJsonResponse } from "./normalizers.mjs";
 
-export async function analyzeJobMatch(task, apiKey) {
-  const text = await request(task.aiConfig, apiKey, buildAnalysisMessages(task), true);
+export async function profileJob(task, apiKey) {
+  const text = await request(task.aiConfig, apiKey, buildRoleProfileMessages(task), true);
+  return normalizeRoleProfile(parseJsonResponse(text));
+}
+
+export async function analyzeJobMatch(task, roleProfile, apiKey) {
+  const text = await request(task.aiConfig, apiKey, buildAnalysisMessages(task, roleProfile), true);
   return normalizeAnalysis(parseJsonResponse(text));
+}
+
+export async function generatePreparationPlan(task, roleProfile, analysis, apiKey) {
+  const text = await request(task.aiConfig, apiKey, buildPreparationMessages(task, roleProfile, analysis), true);
+  const preparation = normalizePreparation(parseJsonResponse(text));
+  preparation.interview.eligible = ["ready", "near_ready"].includes(analysis.readiness?.level);
+  if (!preparation.interview.eligible) preparation.interview.questions = [];
+  return preparation;
 }
 
 export async function generateOptimizedResume(task, analysis, apiKey) {

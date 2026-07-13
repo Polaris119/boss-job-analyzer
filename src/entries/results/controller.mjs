@@ -1,5 +1,4 @@
 import { buildAnalysisMarkdown } from "../../features/exports/markdown-exporter.mjs";
-import { migrateLegacyHistory } from "../../features/tasks/task-service.mjs";
 import { localStore } from "../../platform/chrome/storage.mjs";
 import { openExtensionPage } from "../../platform/chrome/tabs.mjs";
 import { getTask, putTask } from "../../platform/indexeddb/task-repository.mjs";
@@ -12,14 +11,13 @@ import { formatDate, safeFilename, validThemeColor } from "../../shared/utils/va
 import { renderReport } from "./report-view.mjs";
 
 const state = { record: null };
-const ids = ["job-title", "job-meta", "report-panel", "resume-panel", "match-section", "suggestion-section", "roadmap-section", "resume-fields", "resume-theme-color", "add-resume-section", "download-markdown", "save-result", "export-pdf", "empty", "toast"];
+const ids = ["job-title", "job-meta", "report-panel", "resume-panel", "overview-section", "strengths-section", "gaps-section", "actions-section", "knowledge-section", "short-term-section", "long-term-section", "interview-section", "resume-fields", "resume-theme-color", "add-resume-section", "download-markdown", "save-result", "export-pdf", "empty", "toast"];
 const elements = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
 
 document.addEventListener("DOMContentLoaded", initialize);
 
 async function initialize() {
   bindEvents();
-  await migrateLegacyHistory();
   const parameters = new URLSearchParams(location.search);
   const recordId = parameters.get("task") || parameters.get("record");
   state.record = globalThis.__RESULTS_PREVIEW_RECORD__ || await getTask(recordId) || null;
@@ -43,6 +41,7 @@ function bindEvents() {
     state.record.resumeThemeColor = event.target.value;
     applyResumeTheme();
   });
+  setupReportNavigation();
 }
 
 function render() {
@@ -52,8 +51,9 @@ function render() {
   const salary = JobSalaryParser.extractReadableSalary([job.salary]);
   elements["job-meta"].textContent = [salary, formatDate(state.record.createdAt)].filter(Boolean).join(" · ");
   document.title = `${companyAndJob} - 分析结果`;
-  renderReport(analysis, elements);
+  renderReport(state.record, elements);
   const hasResume = Boolean(state.record.optimizedResume);
+  document.querySelector(".top-tabs").classList.toggle("single-tab", !hasResume);
   document.querySelector('[data-tab="resume"]').hidden = !hasResume;
   elements["resume-panel"].hidden = true;
   if (hasResume) {
@@ -61,6 +61,24 @@ function render() {
     elements["resume-theme-color"].value = state.record.resumeThemeColor;
     applyResumeTheme();
   }
+}
+
+function setupReportNavigation() {
+  const links = [...document.querySelectorAll("#report-nav a")];
+  let lockedUntil = 0;
+  const setCurrent = (targetId) => links.forEach((link) => link.setAttribute("aria-current", String(link.dataset.target === targetId)));
+  links.forEach((link) => link.addEventListener("click", () => {
+    lockedUntil = Date.now() + 900;
+    setCurrent(link.dataset.target);
+  }));
+  if (!globalThis.IntersectionObserver) return;
+  const observer = new IntersectionObserver((entries) => {
+    if (Date.now() < lockedUntil) return;
+    const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!visible) return;
+    setCurrent(visible.target.id);
+  }, { rootMargin: "-18% 0px -68%", threshold: [0, 0.2, 0.6] });
+  document.querySelectorAll("[data-report-section]").forEach((section) => observer.observe(section));
 }
 
 function renderResume() {

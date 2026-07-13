@@ -68,6 +68,11 @@ test("results page separates report and resume exports", () => {
   assert.match(html, /data-tab="resume"/);
   assert.match(html, /id="download-markdown"/);
   assert.match(html, /id="export-pdf"/);
+  assert.match(html, /class="report-sidebar"/);
+  assert.match(html, />准备度概览<\/a>/);
+  assert.match(html, /href="#overview-section"/);
+  assert.match(html, /href="#short-term-section"/);
+  assert.match(html, /href="#interview-section"/);
 });
 
 test("resume editor supports theme colors and structural editing", () => {
@@ -87,6 +92,16 @@ test("tasks can skip resume generation and results hide unavailable resume UI", 
   assert.match(results, /Boolean\(state\.record\.optimizedResume\)/);
   assert.match(results, /data-tab="resume"/);
   assert.match(sidePanel, /generateResume:\s*state\.generateResume/);
+});
+
+test("analysis pipeline profiles the role before diagnosis and planning", () => {
+  const runner = read("src/features/tasks/task-runner.mjs");
+  const prompts = read("src/features/analysis/prompts.mjs");
+  assert.ok(runner.indexOf("await profileJob") < runner.indexOf("await analyzeJobMatch"));
+  assert.ok(runner.indexOf("await analyzeJobMatch") < runner.indexOf("await generatePreparationPlan"));
+  assert.match(prompts, /buildRoleProfileMessages/);
+  assert.match(prompts, /buildPreparationMessages/);
+  assert.match(prompts, /高适配时允许 gaps 和 knowledgePoints 为空/);
 });
 
 test("job extraction uses visible content and a content fingerprint", () => {

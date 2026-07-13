@@ -50,7 +50,7 @@ function renderTaskCard(task, isRunner, actions) {
   if (task.status === TASK_STATUS.RUNNING) {
     const progress = node("div", "phase-progress");
     const bar = node("span");
-    bar.style.width = task.stage === "resume" ? "75%" : "35%";
+    bar.style.width = progressWidth(task.stage);
     progress.append(bar);
     content.append(progress);
   }
@@ -85,8 +85,17 @@ function action(text, handler, danger = false) {
 }
 
 function statusText(task) {
-  if (task.status === TASK_STATUS.RUNNING) return task.stage === "resume" ? "正在生成简历" : "正在分析匹配";
+  if (task.status === TASK_STATUS.RUNNING) return ({
+    profile: "正在识别岗位",
+    analysis: "正在诊断差距",
+    preparation: "正在生成准备计划",
+    resume: "正在生成简历"
+  })[task.stage] || "正在分析岗位";
   return ({ queued: "等待中", completed: "已完成", failed: "失败", canceled: "已取消" })[task.status] || task.status;
+}
+
+function progressWidth(stage) {
+  return ({ profile: "18%", analysis: "42%", preparation: "68%", resume: "88%", complete: "100%" })[stage] || "10%";
 }
 
 function readableSalary(value) {
