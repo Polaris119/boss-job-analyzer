@@ -15,11 +15,13 @@ const entries = {
 test("side panel exposes explicit config, queue feedback and workbench entry", () => {
   const html = read(`${entries.sidePanel}/index.html`);
   assert.match(html, /id="config-feedback"/);
-  assert.match(html, /id="action-feedback"/);
+  assert.match(html, /id="toast"/);
+  assert.match(html, /id="generate-resume"[^>]*checked/);
   assert.match(html, /id="open-workbench"/);
   assert.match(html, /id="delete-resume"[^>]*hidden/);
   assert.doesNotMatch(html, /本地数据管理|id="clear-data"/);
   assert.ok(html.indexOf("加入分析队列") < html.indexOf("AI 接入配置"));
+  assert.ok(html.indexOf("生成定制简历") < html.indexOf("加入分析队列"));
   assert.match(read("src/shared/styles/base.css"), /\[hidden\]\s*\{\s*display:\s*none\s*!important/);
 });
 
@@ -75,6 +77,16 @@ test("resume editor supports theme colors and structural editing", () => {
   assert.match(html, /id="add-resume-section"/);
   assert.match(script, /moveSection/);
   assert.match(script, /moveItem/);
+});
+
+test("tasks can skip resume generation and results hide unavailable resume UI", () => {
+  const runner = read("src/features/tasks/task-runner.mjs");
+  const results = read(`${entries.results}/controller.mjs`);
+  const sidePanel = read(`${entries.sidePanel}/controller.mjs`);
+  assert.match(runner, /generateResume && !task\.optimizedResume/);
+  assert.match(results, /Boolean\(state\.record\.optimizedResume\)/);
+  assert.match(results, /data-tab="resume"/);
+  assert.match(sidePanel, /generateResume:\s*state\.generateResume/);
 });
 
 test("job extraction uses visible content and a content fingerprint", () => {

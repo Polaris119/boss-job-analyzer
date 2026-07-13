@@ -8,15 +8,15 @@ import { openExtensionPage, openWorkbench } from "../../platform/chrome/tabs.mjs
 import { findExactTask, subscribeToTaskChanges } from "../../platform/indexeddb/task-repository.mjs";
 import { resultRoute, ROUTES } from "../../shared/constants/routes.mjs";
 import { STORAGE_KEYS } from "../../shared/constants/storage-keys.mjs";
+import { showToast as showToastMessage } from "../../shared/ui/toast.mjs";
 import { clone, formatDate as formatStoredDate } from "../../shared/utils/value.mjs";
 
-const state = { baseResume: null, currentJob: null, config: null };
+const state = { baseResume: null, currentJob: null, config: null, generateResume: true };
 const ids = [
   "resume-status", "resume-detail", "resume-file", "resume-feedback", "edit-resume",
   "job-status", "job-detail", "queue-summary", "open-workbench", "provider-template",
   "base-url", "model", "api-key", "remember-key", "save-config", "test-config",
-  "config-feedback", "analyze", "action-help", "action-feedback", "error",
-  "delete-resume"
+  "config-feedback", "generate-resume", "analyze", "action-help", "toast", "delete-resume"
 ];
 const elements = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
 
@@ -39,6 +39,11 @@ function bindEvents() {
   elements.analyze.addEventListener("click", enqueueCurrentJob);
   elements["open-workbench"].addEventListener("click", openWorkbench);
   elements["delete-resume"].addEventListener("click", deleteBaseResume);
+  elements["generate-resume"].addEventListener("change", async (event) => {
+    state.generateResume = event.target.checked;
+    await localStore.set({ [STORAGE_KEYS.GENERATE_RESUME]: state.generateResume });
+    await renderStatus();
+  });
   [elements["base-url"], elements.model, elements["api-key"]].forEach((input) => input.addEventListener("input", renderStatus));
 
   subscribeToLocalStorage((changes) => {
@@ -49,11 +54,13 @@ function bindEvents() {
 }
 
 async function loadState() {
-  const local = await localStore.get([STORAGE_KEYS.BASE_RESUME, STORAGE_KEYS.CURRENT_JOB, STORAGE_KEYS.AI_CONFIG]);
+  const local = await localStore.get([STORAGE_KEYS.BASE_RESUME, STORAGE_KEYS.CURRENT_JOB, STORAGE_KEYS.AI_CONFIG, STORAGE_KEYS.GENERATE_RESUME]);
   const session = await sessionStore.get(STORAGE_KEYS.SESSION_API_KEY);
   state.baseResume = local[STORAGE_KEYS.BASE_RESUME] || null;
   state.currentJob = local[STORAGE_KEYS.CURRENT_JOB] || null;
   state.config = local[STORAGE_KEYS.AI_CONFIG] || null;
+  state.generateResume = local[STORAGE_KEYS.GENERATE_RESUME] !== false;
+  elements["generate-resume"].checked = state.generateResume;
   if (state.config) {
     elements["provider-template"].value = state.config.provider || "custom";
     elements["base-url"].value = state.config.baseUrl || "";
@@ -102,7 +109,6 @@ async function openResumeEditor() {
 }
 
 async function handleSaveConfig() {
-  clearError();
   hideFeedback(elements["config-feedback"]);
   setBusy(elements["save-config"], true, "保存中…");
   try { await saveConfig(); showFeedback(elements["config-feedback"], "配置保存成功。", true); }
@@ -145,7 +151,6 @@ function validateConfig(config) {
 }
 
 async function testConnection() {
-  clearError();
   hideFeedback(elements["config-feedback"]);
   setBusy(elements["test-config"], true, "测试中…");
   try {
@@ -157,14 +162,16 @@ async function testConnection() {
 }
 
 async function enqueueCurrentJob() {
-  clearError();
-  hideFeedback(elements["action-feedback"]);
   setBusy(elements.analyze, true, "正在加入…");
   try {
     const config = await saveConfig();
-    const exact = await findExactTask(state.currentJob.jobKey || state.currentJob.id, state.currentJob.contentHash || state.currentJob.fingerprint);
+    const exact = await findExactTask(
+      state.currentJob.jobKey || state.currentJob.id,
+      state.currentJob.contentHash || state.currentJob.fingerprint,
+      state.generateResume
+    );
     if (exact && ["queued", "running"].includes(exact.status)) {
-      showFeedback(elements["action-feedback"], "该岗位版本已经在分析队列中。", true);
+      showActionToast("该岗位版本已经在分析队列中。", true);
       await openWorkbench();
       return;
     }
@@ -175,11 +182,20 @@ async function enqueueCurrentJob() {
         return;
       }
     }
-    await createTask({ job: clone(state.currentJob), resumeSnapshot: clone(state.baseResume), aiConfig: config, sourceTaskId: exact?.id || null });
-    showFeedback(elements["action-feedback"], "已加入分析队列，工作台将按并行设置执行。", true);
+    await createTask({
+      job: clone(state.currentJob),
+      resumeSnapshot: clone(state.baseResume),
+      aiConfig: config,
+      generateResume: state.generateResume,
+      sourceTaskId: exact?.id || null
+    });
+    const message = state.generateResume
+      ? "已加入分析队列，将生成分析报告和定制简历。"
+      : "已加入分析队列，本次仅生成分析报告。";
+    showActionToast(message, true);
     await renderQueueStats();
     await openWorkbench();
-  } catch (error) { showError(error); }
+  } catch (error) { showActionToast(error?.message || String(error), false); }
   finally { setBusy(elements.analyze, false, "加入分析队列"); await renderStatus(); }
 }
 
@@ -205,7 +221,10 @@ async function renderStatus() {
   const configReady = Boolean(elements["base-url"].value.trim() && elements.model.value.trim() && elements["api-key"].value.trim());
   const ready = Boolean(state.baseResume && state.currentJob && configReady);
   elements.analyze.disabled = !ready;
-  if (ready) setActionHelp("任务会冻结当前岗位与简历快照。", false);
+  if (ready) {
+    const output = state.generateResume ? "分析报告和定制简历" : "岗位分析报告";
+    setActionHelp(`任务会冻结当前岗位与简历快照，并生成${output}。`, false);
+  }
   else {
     const missing = [];
     if (!state.baseResume) missing.push("已保存的 PDF 简历");
@@ -234,8 +253,7 @@ async function deleteBaseResume() {
 function showFeedback(node, message, success) { node.textContent = message; node.className = `inline-feedback ${success ? "success" : "failure"}`; node.hidden = false; }
 function hideFeedback(node) { node.hidden = true; node.textContent = ""; }
 function setBusy(button, busy, label) { button.disabled = busy; button.textContent = label; }
-function showError(error) { elements.error.textContent = error?.message || String(error); elements.error.hidden = false; }
-function clearError() { elements.error.hidden = true; elements.error.textContent = ""; }
+function showActionToast(message, success) { showToastMessage(elements.toast, message, success, 3000); }
 function setActionHelp(message, success) { elements["action-help"].textContent = message; elements["action-help"].style.color = success ? "#087c45" : ""; }
 function setBadge(node, text, className) { node.textContent = text; node.className = `badge ${className}`.trim(); }
 function formatDate(value) { return formatStoredDate(value, "short"); }

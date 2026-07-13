@@ -53,9 +53,14 @@ function render() {
   elements["job-meta"].textContent = [salary, formatDate(state.record.createdAt)].filter(Boolean).join(" · ");
   document.title = `${companyAndJob} - 分析结果`;
   renderReport(analysis, elements);
-  renderResume();
-  elements["resume-theme-color"].value = state.record.resumeThemeColor;
-  applyResumeTheme();
+  const hasResume = Boolean(state.record.optimizedResume);
+  document.querySelector('[data-tab="resume"]').hidden = !hasResume;
+  elements["resume-panel"].hidden = true;
+  if (hasResume) {
+    renderResume();
+    elements["resume-theme-color"].value = state.record.resumeThemeColor;
+    applyResumeTheme();
+  }
 }
 
 function renderResume() {

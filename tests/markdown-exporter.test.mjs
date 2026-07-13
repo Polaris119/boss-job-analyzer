@@ -17,3 +17,12 @@ test("Markdown export keeps report sections and escapes table cells", () => {
   assert.match(markdown, /部分满足/);
   assert.match(markdown, /## 7\. 待用户确认的信息/);
 });
+
+test("Markdown export supports analysis-only tasks", () => {
+  const markdown = buildAnalysisMarkdown({
+    job: { company: "示例公司", title: "后端工程师", url: "https://example.com/job" },
+    analysis: { jobSummary: "岗位概述", requirements: [], suggestions: [], skillGaps: [], roadmap: [], interviewFocus: [] },
+    optimizedResume: null
+  }, "");
+  assert.match(markdown, /本次任务未生成定制简历/);
+});

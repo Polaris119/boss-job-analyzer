@@ -169,7 +169,13 @@ async function reanalyze(task) {
   const baseResume = stored[STORAGE_KEYS.BASE_RESUME];
   const aiConfig = stored[STORAGE_KEYS.AI_CONFIG];
   if (!baseResume || !aiConfig) return showToast("请先在插件中保存基础简历和 AI 配置。", false);
-  await createTask({ job: clone(task.job), resumeSnapshot: clone(baseResume), aiConfig, sourceTaskId: task.id });
+  await createTask({
+    job: clone(task.job),
+    resumeSnapshot: clone(baseResume),
+    aiConfig,
+    generateResume: task.generateResume !== false,
+    sourceTaskId: task.id
+  });
   showToast("已使用当前基础简历加入新任务。", true);
   await refreshAndSchedule();
 }

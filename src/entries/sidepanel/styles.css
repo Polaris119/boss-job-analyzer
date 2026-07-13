@@ -42,6 +42,19 @@ main { display: grid; gap: 12px; padding: 12px; }
 .badge.muted { color: var(--muted); background: #eef1f1; }
 .badge.warning { color: #8a5b00; background: var(--warning); }
 
+.action-card { display: grid; gap: 10px; }
+.task-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 11px; border-radius: 9px; background: #f1f7f7; cursor: pointer; }
+.task-option-copy { display: grid; gap: 2px; }
+.task-option-copy strong { font-size: 12px; }
+.task-option-copy small { color: var(--muted); font-size: 11px; font-weight: 400; }
+.switch-control { position: relative; flex: 0 0 auto; width: 38px; height: 22px; }
+.switch-control input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.switch-track { position: absolute; inset: 0; border-radius: 99px; background: #aeb9b9; transition: background .16s ease; }
+.switch-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .16s ease; }
+.switch-control input:checked + .switch-track { background: var(--teal); }
+.switch-control input:checked + .switch-track::after { transform: translateX(16px); }
+.switch-control input:focus-visible + .switch-track { outline: 3px solid rgba(10,167,164,.2); outline-offset: 2px; }
+
 details summary { font-weight: 700; cursor: pointer; }
 .form-grid { display: grid; gap: 10px; margin-top: 12px; }
 label { display: grid; gap: 5px; color: #40494b; font-size: 12px; font-weight: 600; }
@@ -80,4 +93,4 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); outline: 
 .inline-feedback.success { color: #087c45; background: #e6f6ec; }
 .inline-feedback.failure { color: var(--danger); background: #fff0ee; }
 
-.error { margin: 10px 0 0; padding: 9px; border-radius: 8px; color: var(--danger); background: #fff0ee; white-space: pre-wrap; }
+.toast { position: fixed; right: 12px; bottom: 12px; left: 12px; z-index: 10; padding: 11px 13px; border-radius: 10px; color: #fff; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.2); }

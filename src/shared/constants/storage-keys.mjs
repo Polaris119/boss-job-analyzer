@@ -2,6 +2,7 @@ export const STORAGE_KEYS = Object.freeze({
   AI_CONFIG: "aiConfig",
   BASE_RESUME: "baseResume",
   CURRENT_JOB: "currentJob",
+  GENERATE_RESUME: "generateResume",
   LEGACY_HISTORY: "analysisHistory",
   LEGACY_HISTORY_MIGRATED: "legacyHistoryMigratedV1",
   PRINT_RESUME: "printResume",

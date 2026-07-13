@@ -44,7 +44,8 @@ function renderTaskCard(task, isRunner, actions) {
   title.append(node("h3", "", companyAndJob), node("span", `status-badge ${task.status}`, statusText(task)));
   content.append(title);
   content.append(node("p", "", [readableSalary(task.job?.salary), task.job?.jobMeta].filter(Boolean).join(" · ")));
-  content.append(node("p", "", `版本 ${String(task.contentHash || "").slice(0, 8) || "未知"} · ${formatDate(task.createdAt)} · ${task.aiConfig?.model || "历史模型未知"}`));
+  const outputMode = task.generateResume === false ? "仅分析报告" : "含定制简历";
+  content.append(node("p", "", `版本 ${String(task.contentHash || "").slice(0, 8) || "未知"} · ${formatDate(task.createdAt)} · ${task.aiConfig?.model || "历史模型未知"} · ${outputMode}`));
   if (task.error) content.append(node("p", "", task.error));
   if (task.status === TASK_STATUS.RUNNING) {
     const progress = node("div", "phase-progress");

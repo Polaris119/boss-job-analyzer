@@ -93,9 +93,13 @@ export async function deleteTasks(taskIds) {
   broadcast({ type: "tasks-changed" });
 }
 
-export async function findExactTask(jobKey, contentHash) {
+export async function findExactTask(jobKey, contentHash, generateResume) {
   const tasks = await getAllTasks();
-  return tasks.find((task) => task.jobKey === jobKey && task.contentHash === contentHash) || null;
+  return tasks.find((task) => {
+    const sameJobVersion = task.jobKey === jobKey && task.contentHash === contentHash;
+    const sameOutputMode = generateResume === undefined || (task.generateResume !== false) === generateResume;
+    return sameJobVersion && sameOutputMode;
+  }) || null;
 }
 
 export function subscribeToTaskChanges(callback) {

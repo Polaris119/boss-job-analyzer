@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>侧边栏操作区预览</title>
+    <link rel="stylesheet" href="../src/entries/sidepanel/styles.css">
+  </head>
+  <body>
+    <main>
+      <section class="card action-card">
+        <label class="task-option" for="generate-resume">
+          <span class="task-option-copy"><strong>生成定制简历</strong><small>关闭后只生成岗位分析报告，可减少一次 AI 调用。</small></span>
+          <span class="switch-control"><input id="generate-resume" type="checkbox" checked><span class="switch-track" aria-hidden="true"></span></span>
+        </label>
+        <button id="analyze" class="primary-button" type="button">加入分析队列</button>
+        <p class="secondary center">任务会冻结当前岗位与简历快照，并生成分析报告和定制简历。</p>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module">
+      import { showToast } from "../src/shared/ui/toast.mjs";
+      document.getElementById("analyze").addEventListener("click", () => showToast(document.getElementById("toast"), "已加入分析队列，将生成分析报告和定制简历。", true, 3000));
+    </script>
+  </body>
+</html>

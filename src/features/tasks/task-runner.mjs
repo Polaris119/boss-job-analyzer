@@ -6,6 +6,7 @@ import { TASK_STATUS } from "../../shared/constants/task-status.mjs";
 
 export async function runTask(task, isCanceled) {
   try {
+    const generateResume = task.generateResume !== false;
     const apiKey = await getApiKey(task);
     task.status = TASK_STATUS.RUNNING;
     task.startedAt ||= new Date().toISOString();
@@ -19,12 +20,14 @@ export async function runTask(task, isCanceled) {
       const analysis = await analyzeJobMatch(task, apiKey);
       if (isCanceled()) return;
       task.analysis = analysis;
-      task.stage = "resume";
-      task.phase = "generating-resume";
+      if (generateResume) {
+        task.stage = "resume";
+        task.phase = "generating-resume";
+      }
       await putTask(task);
     }
 
-    if (!task.optimizedResume) {
+    if (generateResume && !task.optimizedResume) {
       task.stage = "resume";
       task.phase = "generating-resume";
       await putTask(task);

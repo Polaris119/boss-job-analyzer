@@ -2,7 +2,7 @@ import { TASK_STATUS } from "../../shared/constants/task-status.mjs";
 
 export const DEFAULT_RESUME_THEME = "#087f7c";
 
-export function createTaskRecord({ job, resumeSnapshot, aiConfig, sourceTaskId = null }) {
+export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume = true, sourceTaskId = null }) {
   const now = new Date().toISOString();
   return {
     id: crypto.randomUUID ? crypto.randomUUID() : `task-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -10,6 +10,7 @@ export function createTaskRecord({ job, resumeSnapshot, aiConfig, sourceTaskId =
     contentHash: job.contentHash || job.fingerprint || "",
     job,
     resumeSnapshot,
+    generateResume: generateResume !== false,
     aiConfig: {
       provider: aiConfig.provider,
       baseUrl: aiConfig.baseUrl,
@@ -40,6 +41,7 @@ export function createLegacyTask(record) {
     contentHash: record.job?.contentHash || record.job?.fingerprint || "legacy",
     job: record.job || {},
     resumeSnapshot: null,
+    generateResume: record.generateResume !== false,
     aiConfig: null,
     status: TASK_STATUS.COMPLETED,
     phase: "completed",
