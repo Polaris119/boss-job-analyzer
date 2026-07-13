@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>定制简历</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <aside class="toolbar">
+      <div>
+        <strong>PDF 导出预览</strong>
+        <span>在打印窗口中选择“另存为 PDF”</span>
+      </div>
+      <button id="print" type="button">打印 / 保存 PDF</button>
+    </aside>
+    <main id="resume" class="resume-page" aria-live="polite"></main>
+    <script type="module" src="controller.mjs"></script>
+  </body>
+</html>

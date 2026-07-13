@@ -1,0 +1,12 @@
+:root {
+  color-scheme: light;
+  --teal: #0a9e9a;
+  --teal-dark: #087572;
+  --ink: #202729;
+  --muted: #687477;
+  --line: #dfe6e6;
+  --surface: #ffffff;
+  --canvas: #f3f7f7;
+  --warning: #fff6d8;
+  --danger: #b42318;
+}

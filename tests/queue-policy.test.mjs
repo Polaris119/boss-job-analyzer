@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { clampConcurrency, selectRunnableTasks } from "../queue-policy.mjs";
+import { clampConcurrency, selectRunnableTasks } from "../src/features/tasks/queue-policy.mjs";
 
 test("concurrency is user configurable within the supported range", () => {
   assert.equal(clampConcurrency(1), 1);

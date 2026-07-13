@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { groupItemsIntoLines } from "../pdf-text.mjs";
+import { groupItemsIntoLines } from "../src/features/resume/pdf-layout.mjs";
 
 test("PDF text items are grouped by visual line and x position", () => {
   const items = [

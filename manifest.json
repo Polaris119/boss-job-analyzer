@@ -5,33 +5,39 @@
   "version": "0.5.3",
   "minimum_chrome_version": "114",
   "icons": {
-    "16": "logo.png",
-    "32": "logo.png",
-    "48": "logo.png",
-    "128": "logo.png"
+    "16": "assets/logo.png",
+    "32": "assets/logo.png",
+    "48": "assets/logo.png",
+    "128": "assets/logo.png"
   },
-  "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
+  "permissions": ["sidePanel", "storage"],
   "host_permissions": ["https://www.zhipin.com/*"],
   "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "src/entries/background/service-worker.mjs",
     "type": "module"
   },
   "action": {
     "default_title": "打开BOSS直聘岗位分析助手",
     "default_icon": {
-      "16": "logo.png",
-      "32": "logo.png"
+      "16": "assets/logo.png",
+      "32": "assets/logo.png"
     }
   },
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "src/entries/sidepanel/index.html"
   },
   "content_scripts": [
     {
       "matches": ["https://www.zhipin.com/*"],
-      "js": ["salary.js", "content.js"],
-      "css": ["content.css"],
+      "js": [
+        "src/features/job-capture/text-utils.js",
+        "src/features/job-capture/salary-parser.js",
+        "src/features/job-capture/job-extractor.js",
+        "src/platform/chrome/content-bridge.js",
+        "src/entries/content/content-script.js"
+      ],
+      "css": ["src/entries/content/content.css"],
       "run_at": "document_idle"
     }
   ]

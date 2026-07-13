@@ -20,7 +20,22 @@
 3. 点击“加载已解压的扩展程序”。
 4. 选择本项目目录。
 
-项目不需要安装依赖或执行构建命令。
+项目不需要安装依赖或执行构建命令。源码已经按扩展入口、业务功能、浏览器适配和共享代码分层，选择项目根目录即可直接加载。
+
+## 项目结构
+
+```text
+src/
+├── entries/          # service worker、content script 和各扩展页面入口
+├── features/         # 岗位采集、简历解析、AI 分析、任务队列和导出
+├── platform/         # Chrome API 与 IndexedDB 适配层
+└── shared/           # 常量、通用 UI、工具函数和设计变量
+tests/                # 单元测试、架构契约测试和浏览器预览页
+vendor/               # 随扩展发布的 PDF.js
+assets/               # 扩展图标等静态资源
+```
+
+扩展页面和 service worker 使用原生 ES Modules。Manifest 按依赖顺序加载 BOSS content script 的多个经典脚本，因此在不增加构建步骤的情况下仍能保持模块边界。
 
 ## 验证流程
 
@@ -50,7 +65,7 @@
 
 ## 当前限制
 
-- BOSS 登录后的真实 DOM 仍需实机验证。页面选择器集中在 `content.js`，PDF 文本分段逻辑在 `parser.js`。
+- BOSS 登录后的真实 DOM 仍需实机验证。页面选择器集中在 `src/features/job-capture/job-extractor.js`，PDF 文本分段逻辑在 `src/features/resume/resume-parser.mjs`。
 - BOSS 若只通过动态私有字体展示薪资，插件会隐藏乱码；可读元数据存在时会自动恢复薪资。
 - 当前只支持文本型 PDF；扫描件会提示暂不支持 OCR。
 - 第一版通过浏览器打印窗口生成 PDF，不直接生成 DOCX。
@@ -80,15 +95,7 @@
 使用 Node.js 运行：
 
 ```sh
-node --check background.js
-node --check content.js
-cp sidepanel.js /tmp/sidepanel.mjs
-node --check /tmp/sidepanel.mjs
-node --check pdf-reader.mjs
-node --check resume-editor.js
-node --check results.js
-node --check workbench.js
-node --check resume.js
+rg --files src -g '*.js' -g '*.mjs' | xargs -n1 node --check
 node --test tests/*.test.cjs tests/*.test.mjs
 ```
 

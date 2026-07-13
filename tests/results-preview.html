@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>结果页预览</title><link rel="stylesheet" href="../results.css"></head>
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>结果页预览</title><link rel="stylesheet" href="../src/entries/results/styles.css"></head>
   <body>
     <header class="result-header"><div><p>BOSS直聘岗位分析助手 · 分析完成</p><h1 id="job-title">岗位分析结果</h1><span id="job-meta"></span></div><span class="complete-badge">✓ 已完成</span></header>
     <main class="result-shell">
@@ -14,6 +14,6 @@
       window.__RESULTS_PREVIEW_RECORD__=demo;
       window.chrome={storage:{local:{get:async()=>({legacyHistoryMigratedV1:true}),set:async()=>{}}},tabs:{create:async()=>{}},runtime:{getURL:(value)=>value}};
     </script>
-    <script src="../salary.js"></script><script type="module" src="../results.js"></script>
+    <script src="../src/features/job-capture/salary-parser.js"></script><script type="module" src="../src/entries/results/controller.mjs"></script>
   </body>
 </html>

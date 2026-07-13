@@ -3,7 +3,8 @@
   <head><meta charset="utf-8"><title>任务存储测试</title></head>
   <body><h1>任务存储测试</h1><pre id="result">正在测试…</pre>
     <script type="module">
-      import { claimQueuedTask, clearTasks, createTask, findExactTask, getTaskStats, putTask } from "../task-store.mjs";
+      import { createTask, getTaskStats } from "../src/features/tasks/task-service.mjs";
+      import { claimQueuedTask, clearTasks, findExactTask, putTask } from "../src/platform/indexeddb/task-repository.mjs";
       try {
         await clearTasks();
         const task = await createTask({

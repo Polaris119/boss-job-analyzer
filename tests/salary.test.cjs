@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const salary = require("../salary.js");
+const salary = require("../src/features/job-capture/salary-parser.js");
 
 test("extracts and normalizes a readable salary range", () => {
   assert.equal(salary.extractReadableSalary(["薪资 15 - 25k · 13 薪"]), "15-25K·13薪");

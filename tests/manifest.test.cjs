@@ -17,12 +17,12 @@ test("every manifest script and page exists", () => {
     manifest.background.service_worker,
     manifest.side_panel.default_path,
     ...manifest.content_scripts.flatMap((entry) => [...entry.js, ...entry.css]),
-    "resume-editor.html",
-    "results.html",
-    "workbench.html",
-    "task-store.mjs",
-    "analysis-engine.mjs",
-    "queue-policy.mjs",
+    "src/entries/resume-editor/index.html",
+    "src/entries/results/index.html",
+    "src/entries/workbench/index.html",
+    "src/platform/indexeddb/task-repository.mjs",
+    "src/features/analysis/analysis-service.mjs",
+    "src/features/tasks/queue-policy.mjs",
     "vendor/pdfjs/pdf.mjs",
     "vendor/pdfjs/pdf.worker.mjs"
   ];
@@ -30,18 +30,47 @@ test("every manifest script and page exists", () => {
 });
 
 test("manifest uses the project logo for extension and toolbar icons", () => {
-  assert.equal(manifest.icons[128], "logo.png");
-  assert.equal(manifest.action.default_icon[16], "logo.png");
+  assert.equal(manifest.icons[128], "assets/logo.png");
+  assert.equal(manifest.action.default_icon[16], "assets/logo.png");
   for (const icon of new Set([...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon)])) {
     assert.equal(fs.existsSync(path.join(root, icon)), true, `${icon} should exist`);
   }
 });
 
-test("salary parser loads before the BOSS content script", () => {
-  assert.deepEqual(manifest.content_scripts[0].js, ["salary.js", "content.js"]);
+test("job capture modules load before the BOSS content entry", () => {
+  assert.deepEqual(manifest.content_scripts[0].js, [
+    "src/features/job-capture/text-utils.js",
+    "src/features/job-capture/salary-parser.js",
+    "src/features/job-capture/job-extractor.js",
+    "src/platform/chrome/content-bridge.js",
+    "src/entries/content/content-script.js"
+  ]);
 });
 
 test("AI domains are optional rather than install-time host permissions", () => {
   assert.ok(manifest.optional_host_permissions.includes("https://*/*"));
   assert.ok(!manifest.host_permissions.includes("https://*/*"));
+});
+
+test("manifest does not request unused scripting access", () => {
+  assert.ok(!manifest.permissions.includes("scripting"));
+  assert.ok(!manifest.permissions.includes("activeTab"));
+});
+
+test("extension page script and stylesheet references exist", () => {
+  const pages = [
+    manifest.side_panel.default_path,
+    "src/entries/workbench/index.html",
+    "src/entries/results/index.html",
+    "src/entries/resume-editor/index.html",
+    "src/entries/resume-print/index.html"
+  ];
+  for (const page of pages) {
+    const html = fs.readFileSync(path.join(root, page), "utf8");
+    const references = [...html.matchAll(/<(?:script|link)\b[^>]*(?:src|href)="([^"]+)"/g)].map((match) => match[1]);
+    for (const reference of references) {
+      const target = path.resolve(root, path.dirname(page), reference);
+      assert.equal(fs.existsSync(target), true, `${page} references missing ${reference}`);
+    }
+  }
 });
