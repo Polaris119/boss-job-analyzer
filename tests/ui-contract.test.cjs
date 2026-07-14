@@ -44,17 +44,25 @@ test("product name and company context are visible across primary pages", () => 
   assert.match(read(`${entries.results}/controller.mjs`), /\[job\.company, job\.title/);
 });
 
-test("workbench atomically claims queued tasks before model execution", () => {
-  assert.match(read(`${entries.workbench}/controller.mjs`), /claimQueuedTask/);
+test("background worker atomically claims queued tasks before model execution", () => {
+  const queueController = read("src/entries/background/queue-controller.mjs");
+  assert.match(queueController, /claimQueuedTask/);
+  assert.match(queueController, /runTask/);
+  assert.match(queueController, /recoverInterruptedTasks/);
   const repository = read("src/platform/indexeddb/task-repository.mjs");
   assert.match(repository, /database\.transaction\(TASK_STORE, "readwrite"\)/);
   assert.match(repository, /task\.status !== TASK_STATUS\.QUEUED/);
 });
 
-test("only one workbench tab can own the queue runner", () => {
-  const script = read(`${entries.workbench}/controller.mjs`);
-  assert.match(script, /navigator\.locks\.request\("job-analysis-runner"/);
-  assert.match(script, /if \(!state\.isRunner/);
+test("workbench is a queue client and can close without interrupting analysis", () => {
+  const workbench = read(`${entries.workbench}/controller.mjs`);
+  const background = read("src/entries/background/service-worker.mjs");
+  const html = read(`${entries.workbench}/index.html`);
+  assert.doesNotMatch(workbench, /claimQueuedTask|runTask|beforeunload|navigator\.locks/);
+  assert.match(workbench, /wakeTaskQueue/);
+  assert.match(background, /wakeQueue/);
+  assert.match(background, /QUEUE_RECOVERY_ALARM/);
+  assert.match(html, /工作台可以随时关闭/);
 });
 
 test("resume upload and editing are separate explicit steps", () => {

@@ -12,8 +12,7 @@ body { margin:0; color:var(--ink); background:var(--canvas); font:14px/1.55 -app
 .runner-controls .clear-history-button { color:#ffe7e4; border-color:rgba(255,210,205,.45); }
 .runner-controls option { color:#222; }
 .workbench-shell { max-width:1180px; margin:22px auto 60px; padding:0 24px; }
-.notice,.keep-open-note { margin-bottom:14px; padding:12px 15px; border-radius:10px; }
-.notice { color:#8a5b00; background:#fff6d8; }
+.keep-open-note { margin-bottom:14px; padding:12px 15px; border-radius:10px; }
 .keep-open-note { display:flex; gap:10px; color:#315355; background:#e7f5f4; }
 .keep-open-note span { color:var(--muted); }
 .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:14px; }

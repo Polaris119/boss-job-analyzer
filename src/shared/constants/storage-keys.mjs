@@ -5,6 +5,7 @@ export const STORAGE_KEYS = Object.freeze({
   GENERATE_RESUME: "generateResume",
   PRINT_RESUME: "printResume",
   QUEUE_CONCURRENCY: "queueConcurrency",
+  QUEUE_PAUSED: "queuePaused",
   RESUME_DRAFT: "resumeDraft",
   SESSION_API_KEY: "sessionApiKey",
   WORKBENCH_TAB_ID: "workbenchTabId"

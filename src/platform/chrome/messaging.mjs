@@ -5,3 +5,8 @@ export async function requestAi(payload) {
   if (!response?.ok) throw new Error(response?.error || "AI 请求失败");
   return response.data;
 }
+
+export async function wakeTaskQueue() {
+  const response = await chrome.runtime.sendMessage({ type: MESSAGE_TYPES.WAKE_TASK_QUEUE });
+  if (!response?.ok) throw new Error(response?.error || "无法启动后台分析队列");
+}

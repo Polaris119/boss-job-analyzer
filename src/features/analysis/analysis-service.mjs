@@ -1,4 +1,4 @@
-import { requestAi } from "../../platform/chrome/messaging.mjs";
+import { callAi } from "./ai-gateway.mjs";
 import { buildAnalysisMessages, buildPreparationMessages, buildResumeMessages, buildRoleProfileMessages } from "./prompts.mjs";
 import { normalizeAnalysis, normalizeOptimizedResume, normalizePreparation, normalizeRoleProfile, parseJsonResponse } from "./normalizers.mjs";
 
@@ -29,7 +29,7 @@ function request(config, apiKey, messages, jsonMode) {
   if (!config?.baseUrl || !config?.model || !apiKey) {
     throw new Error("任务缺少可用的 AI 配置或 API Key");
   }
-  return requestAi({
+  return callAi({
     baseUrl: config.baseUrl,
     apiKey,
     model: config.model,

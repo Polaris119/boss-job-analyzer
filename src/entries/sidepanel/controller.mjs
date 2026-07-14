@@ -2,7 +2,7 @@ import { extractPdfText } from "../../features/resume/pdf-reader.mjs";
 import { splitResumeSections } from "../../features/resume/resume-parser.mjs";
 import { createTask, getTaskStats } from "../../features/tasks/task-service.mjs";
 import { ensureEndpointPermission } from "../../platform/chrome/permissions.mjs";
-import { requestAi } from "../../platform/chrome/messaging.mjs";
+import { requestAi, wakeTaskQueue } from "../../platform/chrome/messaging.mjs";
 import { localStore, sessionStore, subscribeToLocalStorage } from "../../platform/chrome/storage.mjs";
 import { openExtensionPage, openWorkbench } from "../../platform/chrome/tabs.mjs";
 import { findExactTask, subscribeToTaskChanges } from "../../platform/indexeddb/task-repository.mjs";
@@ -189,6 +189,7 @@ async function enqueueCurrentJob() {
       roleProfile: exact?.roleProfile ? clone(exact.roleProfile) : null,
       sourceTaskId: exact?.id || null
     });
+    await wakeTaskQueue();
     const message = state.generateResume
       ? "已加入分析队列，将生成分析报告和定制简历。"
       : "已加入分析队列，本次仅生成分析报告。";

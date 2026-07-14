@@ -10,7 +10,7 @@
     "48": "assets/logo.png",
     "128": "assets/logo.png"
   },
-  "permissions": ["sidePanel", "storage"],
+  "permissions": ["alarms", "sidePanel", "storage"],
   "host_permissions": ["https://www.zhipin.com/*"],
   "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
   "background": {

@@ -35,7 +35,7 @@ export async function recoverInterruptedTasks() {
     task.status = TASK_STATUS.QUEUED;
     task.phase = "waiting";
     task.recoveryCount = (task.recoveryCount || 0) + 1;
-    task.error = "上次工作台关闭导致任务中断，已从最近完成阶段恢复排队。";
+    task.error = "上次后台执行中断，已从最近完成阶段恢复排队。";
     await putTask(task);
   }
   return interrupted.length;

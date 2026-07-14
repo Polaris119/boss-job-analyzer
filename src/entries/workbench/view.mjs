@@ -15,10 +15,11 @@ export function renderWorkbench(state, elements, actions) {
 }
 
 export function renderRunnerStatus(state, elements) {
+  const runningCount = state.tasks.filter((task) => task.status === TASK_STATUS.RUNNING).length;
   if (state.queuePaused) {
-    elements["runner-status"].textContent = `已暂停启动新任务 · 当前运行 ${state.running.size}`;
+    elements["runner-status"].textContent = `已暂停启动新任务 · 当前运行 ${runningCount}`;
   } else {
-    elements["runner-status"].textContent = `队列运行中 · 并行上限 ${state.concurrency} · 当前运行 ${state.running.size}`;
+    elements["runner-status"].textContent = `后台队列运行中 · 并行上限 ${state.concurrency} · 当前运行 ${runningCount}`;
   }
 }
 
@@ -26,7 +27,7 @@ export function renderTaskList(state, elements, actions) {
   const tasks = state.tasks.filter((task) => matchesFilter(task, state.filter));
   elements["task-list"].replaceChildren();
   elements.empty.hidden = tasks.length > 0;
-  tasks.forEach((task) => elements["task-list"].append(renderTaskCard(task, state.isRunner, actions)));
+  tasks.forEach((task) => elements["task-list"].append(renderTaskCard(task, actions)));
 }
 
 function matchesFilter(task, filter) {
@@ -35,7 +36,7 @@ function matchesFilter(task, filter) {
   return task.status === filter;
 }
 
-function renderTaskCard(task, isRunner, actions) {
+function renderTaskCard(task, actions) {
   const card = node("article", "task-card");
   card.dataset.status = task.status;
   const content = node("div");
@@ -55,16 +56,12 @@ function renderTaskCard(task, isRunner, actions) {
     content.append(progress);
   }
   const actionNode = node("div", "task-actions");
-  appendTaskActions(actionNode, task, isRunner, actions);
+  appendTaskActions(actionNode, task, actions);
   card.append(content, actionNode);
   return card;
 }
 
-function appendTaskActions(container, task, isRunner, actions) {
-  if (!isRunner) {
-    if (task.status === TASK_STATUS.COMPLETED) container.append(action("查看结果", () => actions.openResult(task.id)));
-    return;
-  }
+function appendTaskActions(container, task, actions) {
   if (task.status === TASK_STATUS.COMPLETED) {
     container.append(action("查看结果", () => actions.openResult(task.id)), action("重新分析", () => actions.reanalyze(task)));
   } else if (task.status === TASK_STATUS.FAILED) {

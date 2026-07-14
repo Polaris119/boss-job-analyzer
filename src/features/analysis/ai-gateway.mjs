@@ -27,15 +27,25 @@ export async function callAi({ baseUrl, apiKey, model, messages, jsonMode = fals
   return content;
 }
 
-function performRequest(endpoint, apiKey, body) {
-  return fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(body)
-  });
+async function performRequest(endpoint, apiKey, body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4 * 60 * 1000);
+  try {
+    return await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") throw new Error("AI 接口响应超时，请稍后重试");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function toChatCompletionsUrl(baseUrl) {

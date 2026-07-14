@@ -16,7 +16,7 @@ export async function runTask(task, isCanceled) {
     if (!task.roleProfile) {
       await setStage(task, "profile", "profiling");
       const roleProfile = await profileJob(task, apiKey);
-      if (isCanceled()) return;
+      if (await isCanceled()) return;
       task.roleProfile = roleProfile;
       await putTask(task);
     }
@@ -24,7 +24,7 @@ export async function runTask(task, isCanceled) {
     if (!task.analysis) {
       await setStage(task, "analysis", "analyzing");
       const analysis = await analyzeJobMatch(task, task.roleProfile, apiKey);
-      if (isCanceled()) return;
+      if (await isCanceled()) return;
       task.analysis = analysis;
       await putTask(task);
     }
@@ -32,7 +32,7 @@ export async function runTask(task, isCanceled) {
     if (!task.preparation) {
       await setStage(task, "preparation", "planning");
       const preparation = await generatePreparationPlan(task, task.roleProfile, task.analysis, apiKey);
-      if (isCanceled()) return;
+      if (await isCanceled()) return;
       task.preparation = preparation;
       await putTask(task);
     }
@@ -40,10 +40,11 @@ export async function runTask(task, isCanceled) {
     if (generateResume && !task.optimizedResume) {
       await setStage(task, "resume", "generating-resume");
       const optimizedResume = await generateOptimizedResume(task, task.analysis, apiKey);
-      if (isCanceled()) return;
+      if (await isCanceled()) return;
       task.optimizedResume = optimizedResume;
     }
 
+    if (await isCanceled()) return;
     task.status = TASK_STATUS.COMPLETED;
     task.stage = "complete";
     task.phase = "completed";
@@ -51,7 +52,7 @@ export async function runTask(task, isCanceled) {
     task.error = "";
     await putTask(task);
   } catch (error) {
-    if (isCanceled()) return;
+    if (await isCanceled()) return;
     task.status = TASK_STATUS.FAILED;
     task.phase = "failed";
     task.error = error?.message || String(error);

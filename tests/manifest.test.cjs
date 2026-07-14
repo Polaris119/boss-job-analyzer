@@ -57,6 +57,10 @@ test("manifest does not request unused scripting access", () => {
   assert.ok(!manifest.permissions.includes("activeTab"));
 });
 
+test("manifest allows the background queue to schedule recovery checks", () => {
+  assert.ok(manifest.permissions.includes("alarms"));
+});
+
 test("extension page script and stylesheet references exist", () => {
   const pages = [
     manifest.side_panel.default_path,
