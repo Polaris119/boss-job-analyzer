@@ -21,17 +21,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 18px 14px;
-  color: #fff;
+  min-height: 30px;
   background: linear-gradient(135deg, #073e3e, #0aa7a4);
 }
-
-.app-header h1 { margin: 1px 0 0; font-size: 20px; }
-.eyebrow { margin: 0; font-size: 11px; opacity: 0.78; }
-.version { padding: 3px 8px; border: 1px solid rgba(255,255,255,.4); border-radius: 99px; font-size: 11px; }
 
 main { display: grid; gap: 12px; padding: 12px; }
 .card { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }

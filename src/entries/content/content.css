@@ -39,7 +39,7 @@
   bottom: 84px;
   z-index: 2147483647;
   width: min(360px, calc(100vw - 48px));
-  padding: 14px 16px;
+  padding: 14px 44px 14px 16px;
   border: 1px solid #f1c7c2;
   border-radius: 12px;
   color: #8f241c;
@@ -48,8 +48,72 @@
   font: 500 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
 }
 
+.job-resume-assistant-notice-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  place-items: center;
+  color: inherit;
+  background: transparent;
+  font: 600 20px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.job-resume-assistant-notice-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.job-resume-assistant-notice-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+#job-resume-assistant-notice[data-type="success"] {
+  border-color: #b9e5d0;
+  color: #087c45;
+  background: #eefaf4;
+}
+
+#job-resume-assistant-notice[data-type="info"] {
+  border-color: #bfe4e2;
+  color: #075d5b;
+  background: #effaf9;
+}
+
 #job-resume-assistant-notice[data-type="context"] {
   border-color: #bfe4e2;
   color: #075d5b;
   background: #effaf9;
+}
+
+.job-resume-assistant-notice-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.job-resume-assistant-notice-actions button {
+  padding: 6px 10px;
+  border: 1px solid #9bcfcd;
+  border-radius: 7px;
+  color: #076b68;
+  background: #fff;
+  font: 600 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+}
+
+.job-resume-assistant-notice-actions button[data-primary="true"] {
+  border-color: #0aa7a4;
+  color: #fff;
+  background: #0aa7a4;
+}
+
+.job-resume-assistant-notice-actions button:disabled {
+  cursor: wait;
+  opacity: .55;
 }

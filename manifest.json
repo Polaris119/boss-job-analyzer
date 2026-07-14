@@ -19,6 +19,7 @@
   },
   "action": {
     "default_title": "打开BOSS直聘岗位分析助手",
+    "default_popup": "src/entries/popup/index.html",
     "default_icon": {
       "16": "assets/logo.png",
       "32": "assets/logo.png"

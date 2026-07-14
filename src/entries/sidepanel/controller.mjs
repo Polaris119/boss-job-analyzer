@@ -48,6 +48,10 @@ function bindEvents() {
   subscribeToLocalStorage((changes) => {
     if (changes[STORAGE_KEYS.BASE_RESUME]) state.baseResume = changes[STORAGE_KEYS.BASE_RESUME].newValue || null;
     if (changes[STORAGE_KEYS.CURRENT_JOB]) state.currentJob = changes[STORAGE_KEYS.CURRENT_JOB].newValue || null;
+    if (changes[STORAGE_KEYS.GENERATE_RESUME]) {
+      state.generateResume = changes[STORAGE_KEYS.GENERATE_RESUME].newValue !== false;
+      elements["generate-resume"].checked = state.generateResume;
+    }
     renderStatus();
   });
 }
@@ -170,8 +174,7 @@ async function enqueueCurrentJob() {
       state.generateResume
     );
     if (exact && ["queued", "running"].includes(exact.status)) {
-      showActionToast("该岗位版本已经在分析队列中。", true);
-      await openWorkbench();
+      showActionToast("这个岗位已经在分析中了，不用重复添加。", true);
       return;
     }
     if (exact?.status === "completed") {
@@ -191,11 +194,10 @@ async function enqueueCurrentJob() {
     });
     await wakeTaskQueue();
     const message = state.generateResume
-      ? "已加入分析队列，将生成分析报告和定制简历。"
-      : "已加入分析队列，本次仅生成分析报告。";
+      ? "已经加入分析队列。完成岗位分析后，还会为你生成一份定制简历。"
+      : "已经加入分析队列。这次只生成岗位分析报告，不会额外生成简历。";
     showActionToast(message, true);
     await renderQueueStats();
-    await openWorkbench();
   } catch (error) { showActionToast(error?.message || String(error), false); }
   finally { setBusy(elements.analyze, false, "加入分析队列"); await renderStatus(); }
 }

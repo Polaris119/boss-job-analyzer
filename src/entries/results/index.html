@@ -9,11 +9,10 @@
   <body>
     <header class="result-header">
       <div>
-        <p>BOSS直聘岗位分析助手 · 分析完成</p>
         <h1 id="job-title">岗位分析结果</h1>
         <span id="job-meta"></span>
       </div>
-      <span class="complete-badge">✓ 已完成</span>
+      <a class="back-workbench-button" href="../workbench/index.html">← 返回岗位工作台</a>
     </header>
 
     <main class="result-shell">
@@ -24,21 +23,21 @@
 
       <section id="report-panel" class="panel">
         <div class="panel-toolbar">
-          <div><h2>岗位准备分析</h2><p>看清与心仪岗位的真实距离，以及最值得做的下一步</p></div>
+          <h2>岗位准备分析</h2>
           <button id="download-markdown" class="primary-button" type="button">下载 Markdown 报告</button>
         </div>
 
         <div class="report-layout">
           <aside class="report-sidebar">
-            <p>报告导航</p>
+            <p>求职判断</p>
             <nav id="report-nav" class="report-nav" aria-label="报告内容导航">
-              <a href="#overview-section" data-target="overview-section" aria-current="true">准备度概览</a>
-              <a href="#strengths-section" data-target="strengths-section">已有优势</a>
-              <a href="#gaps-section" data-target="gaps-section">关键差距</a>
-              <a href="#actions-section" data-target="actions-section">下一步行动</a>
-              <a href="#knowledge-section" data-target="knowledge-section">知识点</a>
-              <a href="#short-term-section" data-target="short-term-section">短期路线</a>
-              <a href="#long-term-section" data-target="long-term-section">长期路线</a>
+              <a href="#overview-section" data-target="overview-section" aria-current="true">是否适合投</a>
+              <a href="#strengths-section" data-target="strengths-section">我有什么优势</a>
+              <a href="#gaps-section" data-target="gaps-section">还需要补什么</a>
+              <a href="#actions-section" data-target="actions-section">现在该做什么</a>
+              <a href="#knowledge-section" data-target="knowledge-section">需要学什么</a>
+              <a href="#short-term-section" data-target="short-term-section">近期准备</a>
+              <a href="#long-term-section" data-target="long-term-section">长期提升</a>
               <a href="#interview-section" data-target="interview-section">面试准备</a>
             </nav>
           </aside>
@@ -58,7 +57,7 @@
 
       <section id="resume-panel" class="panel" hidden>
         <div class="panel-toolbar">
-          <div><h2>定制简历</h2><p>校对、编辑后再导出 PDF</p></div>
+          <h2>定制简历</h2>
           <div class="toolbar-actions">
             <label class="theme-control">主题色 <input id="resume-theme-color" type="color" value="#087f7c"></label>
             <button id="add-resume-section" class="secondary-button" type="button">新增区块</button>

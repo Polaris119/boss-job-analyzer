@@ -2,14 +2,16 @@ import { callAi } from "../../features/analysis/ai-gateway.mjs";
 import { withExtensionKeepAlive } from "../../platform/chrome/service-worker-keepalive.mjs";
 import { getAllTasks } from "../../platform/indexeddb/task-repository.mjs";
 import { MESSAGE_TYPES } from "../../shared/constants/message-types.mjs";
+import { resultRoute } from "../../shared/constants/routes.mjs";
 import { STORAGE_KEYS } from "../../shared/constants/storage-keys.mjs";
 import { TASK_STATUS } from "../../shared/constants/task-status.mjs";
-import { hasActiveQueueTasks, wakeQueue } from "./queue-controller.mjs";
+import { hasActiveQueueTasks, pruneQueueHistory, wakeQueue } from "./queue-controller.mjs";
+import { enqueueStoredCurrentJob } from "./current-job-controller.mjs";
 
 const QUEUE_RECOVERY_ALARM = "job-analysis-queue-recovery";
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
   kickQueueSafely();
 });
 
@@ -21,7 +23,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
-  if (changes[STORAGE_KEYS.QUEUE_CONCURRENCY] || changes[STORAGE_KEYS.QUEUE_PAUSED]) kickQueueSafely();
+  if (changes[STORAGE_KEYS.HISTORY_LIMIT] || changes[STORAGE_KEYS.QUEUE_CONCURRENCY] || changes[STORAGE_KEYS.QUEUE_PAUSED]) kickQueueSafely();
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -45,6 +47,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === MESSAGE_TYPES.ENQUEUE_CURRENT_JOB) {
+    enqueueStoredCurrentJob(message.payload)
+      .then(async (result) => {
+        if (["queued", "requeued"].includes(result.status)) await kickQueue();
+        sendResponse(result);
+      })
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message.type === MESSAGE_TYPES.OPEN_TASK_RESULT) {
+    const taskId = message.payload?.taskId;
+    if (!taskId) {
+      sendResponse({ ok: false, error: "缺少岗位分析任务" });
+      return;
+    }
+    chrome.tabs.create({ url: chrome.runtime.getURL(resultRoute(taskId)) })
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   if (message.type === MESSAGE_TYPES.WAKE_TASK_QUEUE) {
     kickQueue()
       .then(() => sendResponse({ ok: true }))
@@ -55,6 +79,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function kickQueue() {
   await wakeQueue();
+  await pruneQueueHistory();
   if (await hasActiveQueueTasks()) {
     chrome.alarms.create(QUEUE_RECOVERY_ALARM, { delayInMinutes: 1 });
   } else {

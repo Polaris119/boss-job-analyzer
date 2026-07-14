@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head><meta charset="utf-8"><title>BOSS 分栏岗位读取测试</title></head>
+  <head><meta charset="utf-8"><title>BOSS 分栏岗位读取测试</title><link rel="stylesheet" href="../src/entries/content/content.css"></head>
   <body>
     <aside class="rec-job-list">
       <article class="job-card-box"><span class="job-name">AI应用开发 周末双休</span><span class="company-name">左侧列表公司</span></article>
@@ -19,7 +19,11 @@
     <script>
       window.__capturedStorage = {};
       window.chrome = {
-        runtime: { id: "preview-extension", sendMessage: async () => ({ ok: true }) },
+        runtime: { id: "preview-extension", sendMessage: async (message) => message.type === "ENQUEUE_CURRENT_JOB"
+          ? location.search.includes("completed")
+            ? { ok: true, status: "completed", taskId: "preview-task", message: "这个岗位已经有分析结果了。你可以直接查看，也可以结合当前简历重新分析一次。" }
+            : { ok: true, status: "queued", message: "已经为你加入分析队列。" }
+          : { ok: true } },
         storage: { local: {
           get: async (key) => typeof key === "string" ? { [key]: window.__capturedStorage[key] } : window.__capturedStorage,
           remove: async (key) => { delete window.__capturedStorage[key]; },

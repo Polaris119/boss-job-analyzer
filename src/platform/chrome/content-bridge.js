@@ -24,10 +24,20 @@
     return chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
   }
 
+  function enqueueCurrentJob(options = {}) {
+    return chrome.runtime.sendMessage({ type: "ENQUEUE_CURRENT_JOB", payload: options });
+  }
+
+  function openTaskResult(taskId) {
+    return chrome.runtime.sendMessage({ type: "OPEN_TASK_RESULT", payload: { taskId } });
+  }
+
   root.JobCaptureBridge = {
+    enqueueCurrentJob,
     getCurrentJob,
     hasValidExtensionContext,
     openSidePanel,
+    openTaskResult,
     removeCurrentJob,
     saveCurrentJob
   };

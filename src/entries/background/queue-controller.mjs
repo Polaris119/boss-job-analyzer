@@ -1,6 +1,6 @@
-import { clampConcurrency, selectRunnableTasks } from "../../features/tasks/queue-policy.mjs";
+import { clampConcurrency, clampHistoryLimit, selectRunnableTasks } from "../../features/tasks/queue-policy.mjs";
 import { runTask } from "../../features/tasks/task-runner.mjs";
-import { recoverInterruptedTasks } from "../../features/tasks/task-service.mjs";
+import { pruneHistoricalTasks, recoverInterruptedTasks } from "../../features/tasks/task-service.mjs";
 import { localStore } from "../../platform/chrome/storage.mjs";
 import { withExtensionKeepAlive } from "../../platform/chrome/service-worker-keepalive.mjs";
 import { claimQueuedTask, getAllTasks, getTask } from "../../platform/indexeddb/task-repository.mjs";
@@ -21,6 +21,11 @@ export function wakeQueue() {
 export async function hasActiveQueueTasks() {
   const tasks = await getAllTasks();
   return tasks.some((task) => [TASK_STATUS.QUEUED, TASK_STATUS.RUNNING].includes(task.status));
+}
+
+export async function pruneQueueHistory() {
+  const stored = await localStore.get(STORAGE_KEYS.HISTORY_LIMIT);
+  return pruneHistoricalTasks(clampHistoryLimit(stored[STORAGE_KEYS.HISTORY_LIMIT]));
 }
 
 async function scheduleQueue() {
@@ -49,8 +54,9 @@ function startTask(task) {
     });
   }).catch((error) => {
     console.error("后台任务调度失败", error);
-  }).finally(() => {
+  }).finally(async () => {
     running.delete(task.id);
+    await pruneQueueHistory().catch((error) => console.error("历史任务自动清理失败", error));
     void wakeQueue();
   });
   running.set(task.id, execution);

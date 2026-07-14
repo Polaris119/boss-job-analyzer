@@ -15,6 +15,7 @@ test("manifest uses MV3 and only auto-runs on BOSS", () => {
 test("every manifest script and page exists", () => {
   const files = [
     manifest.background.service_worker,
+    manifest.action.default_popup,
     manifest.side_panel.default_path,
     ...manifest.content_scripts.flatMap((entry) => [...entry.js, ...entry.css]),
     "src/entries/resume-editor/index.html",
@@ -35,6 +36,10 @@ test("manifest uses the project logo for extension and toolbar icons", () => {
   for (const icon of new Set([...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon)])) {
     assert.equal(fs.existsSync(path.join(root, icon)), true, `${icon} should exist`);
   }
+});
+
+test("toolbar action opens the extension shortcut menu", () => {
+  assert.equal(manifest.action.default_popup, "src/entries/popup/index.html");
 });
 
 test("job capture modules load before the BOSS content entry", () => {
@@ -63,6 +68,7 @@ test("manifest allows the background queue to schedule recovery checks", () => {
 
 test("extension page script and stylesheet references exist", () => {
   const pages = [
+    manifest.action.default_popup,
     manifest.side_panel.default_path,
     "src/entries/workbench/index.html",
     "src/entries/results/index.html",

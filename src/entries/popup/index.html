@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BOSS直聘岗位分析助手 - 快捷菜单</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header>
+      <img src="../../../assets/logo.png" alt="">
+      <div>
+        <strong>BOSS直聘岗位分析助手</strong>
+        <span>快捷入口</span>
+      </div>
+    </header>
+
+    <main>
+      <nav aria-label="插件快捷入口">
+        <button id="open-home" type="button">
+          <span><strong>打开首页</strong><small>简历、当前岗位与 AI 配置</small></span>
+          <b aria-hidden="true">›</b>
+        </button>
+        <button id="open-workbench" type="button">
+          <span><strong>岗位工作台</strong><small>查看队列、进度和历史结果</small></span>
+          <b aria-hidden="true">›</b>
+        </button>
+        <button id="open-resume" type="button">
+          <span><strong>基础简历</strong><small>打开简历校对与编辑页面</small></span>
+          <b aria-hidden="true">›</b>
+        </button>
+      </nav>
+
+      <label class="resume-option" for="generate-resume">
+        <span><strong>生成定制简历</strong><small id="generate-resume-help">岗位分析完成后继续生成简历</small></span>
+        <span class="switch-control">
+          <input id="generate-resume" type="checkbox" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <section class="quick-settings" aria-label="任务设置">
+        <label class="setting-row" for="queue-concurrency">
+          <span><strong>并行任务</strong><small>同时执行的岗位分析数量</small></span>
+          <select id="queue-concurrency">
+            <option value="1">1 个</option>
+            <option value="2" selected>2 个</option>
+            <option value="3">3 个</option>
+          </select>
+        </label>
+        <label class="setting-row" for="history-limit">
+          <span><strong>历史保留</strong><small id="history-limit-help">超过 20 条后自动删除最早记录</small></span>
+          <select id="history-limit">
+            <option value="10">10 条</option>
+            <option value="20" selected>20 条</option>
+            <option value="30">30 条</option>
+          </select>
+        </label>
+      </section>
+      <p id="feedback" role="status" aria-live="polite" hidden></p>
+    </main>
+
+    <script type="module" src="controller.mjs"></script>
+  </body>
+</html>

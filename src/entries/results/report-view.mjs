@@ -55,7 +55,7 @@ function renderOverview(readiness, roleProfile, panel) {
 }
 
 function renderStrengths(items, panel) {
-  panel.replaceChildren(sectionTitle("已有优势", "简历中已经能够支撑岗位判断的内容"));
+  panel.replaceChildren(sectionTitle("已有优势"));
   if (!items.length) return panel.append(emptyState("简历中暂未识别到足够明确的优势证据。"));
   const list = node("div", "insight-list");
   items.forEach((item) => {
@@ -69,14 +69,13 @@ function renderStrengths(items, panel) {
 }
 
 function renderGaps(items, panel) {
-  panel.replaceChildren(sectionTitle("关键差距", "只展示会影响筛选、面试判断或准备行动的真实问题"));
+  panel.replaceChildren(sectionTitle("关键差距"));
   if (!items.length) return panel.append(emptyState("没有发现会影响当前岗位投递的关键差距，AI 未额外挑刺。", "positive"));
   const list = node("div", "insight-list");
   items.forEach((item) => {
     const card = insightCard(item.title, "gap");
     card.prepend(node("span", "item-label", GAP_TYPES[item.type] || "关键差距"));
     if (item.jobNeed) card.append(detail("岗位需要", item.jobNeed));
-    if (item.jdEvidence) card.append(detail("JD 依据", item.jdEvidence));
     if (item.resumeEvidence.length) card.append(detail("简历现状", item.resumeEvidence.join("；")));
     if (item.impact) card.append(detail("影响", item.impact));
     if (item.action) card.append(detail("建议", item.action));
@@ -86,7 +85,7 @@ function renderGaps(items, panel) {
 }
 
 function renderActions(items, panel) {
-  panel.replaceChildren(sectionTitle("接下来要做的事", "按照投递、面试和长期积累的时间顺序准备"));
+  panel.replaceChildren(sectionTitle("接下来要做的事"));
   if (!items.length) return panel.append(emptyState("当前没有额外准备动作，可以直接进入投递和面试准备。", "positive"));
   const list = node("ol", "action-list");
   items.forEach((item) => {
@@ -99,7 +98,7 @@ function renderActions(items, panel) {
 }
 
 function renderKnowledge(items, panel) {
-  panel.replaceChildren(sectionTitle("需要学习或复习的知识点", "区分新增学习、面试复习和实践举证"));
+  panel.replaceChildren(sectionTitle("需要学习或复习的知识点"));
   if (!items.length) return panel.append(emptyState("当前没有需要额外补充的知识点。", "positive"));
   const list = node("div", "knowledge-grid");
   items.forEach((item) => {
@@ -114,7 +113,7 @@ function renderKnowledge(items, panel) {
 }
 
 function renderRoadmap(title, items, panel) {
-  panel.replaceChildren(sectionTitle(title, title.startsWith("短期") ? "围绕投递和面试前可以完成的准备" : "需要项目、职责或持续实践才能形成的能力"));
+  panel.replaceChildren(sectionTitle(title));
   const timeline = node("div", "roadmap-timeline");
   items.forEach((item, index) => {
     const card = node("article", "roadmap-item");
@@ -133,7 +132,7 @@ function renderRoadmap(title, items, panel) {
 }
 
 function renderInterview(interview, panel) {
-  panel.replaceChildren(sectionTitle("针对性面试准备", "问题来自岗位要求与当前简历的交叉点"));
+  panel.replaceChildren(sectionTitle("针对性面试准备"));
   const list = node("div", "question-list");
   (interview.questions || []).forEach((item, index) => {
     const details = document.createElement("details");
@@ -159,10 +158,9 @@ function setOptionalSection(elements, id, visible) {
   if (link) link.hidden = !visible;
 }
 
-function sectionTitle(title, subtitle) {
+function sectionTitle(title) {
   const head = node("div", "section-heading");
   head.append(node("h2", "", title));
-  if (subtitle) head.append(node("p", "", subtitle));
   return head;
 }
 

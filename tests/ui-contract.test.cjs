@@ -6,11 +6,28 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const entries = {
+  popup: "src/entries/popup",
   sidePanel: "src/entries/sidepanel",
   workbench: "src/entries/workbench",
   results: "src/entries/results",
   resumeEditor: "src/entries/resume-editor"
 };
+
+test("toolbar popup exposes primary destinations and the resume generation switch", () => {
+  const html = read(`${entries.popup}/index.html`);
+  const script = read(`${entries.popup}/controller.mjs`);
+  assert.match(html, /id="open-home"/);
+  assert.match(html, /id="open-workbench"/);
+  assert.match(html, /id="open-resume"/);
+  assert.match(html, /id="generate-resume"[^>]*checked/);
+  assert.match(html, /id="queue-concurrency"/);
+  assert.match(html, /id="history-limit"/);
+  for (const limit of [10, 20, 30]) assert.match(html, new RegExp(`value="${limit}"`));
+  assert.match(script, /STORAGE_KEYS\.GENERATE_RESUME/);
+  assert.match(script, /STORAGE_KEYS\.QUEUE_CONCURRENCY/);
+  assert.match(script, /STORAGE_KEYS\.HISTORY_LIMIT/);
+  assert.match(script, /chrome\.sidePanel\.open/);
+});
 
 test("side panel exposes explicit config, queue feedback and workbench entry", () => {
   const html = read(`${entries.sidePanel}/index.html`);
@@ -22,18 +39,33 @@ test("side panel exposes explicit config, queue feedback and workbench entry", (
   assert.doesNotMatch(html, /本地数据管理|id="clear-data"/);
   assert.ok(html.indexOf("加入分析队列") < html.indexOf("AI 接入配置"));
   assert.ok(html.indexOf("生成定制简历") < html.indexOf("加入分析队列"));
+  assert.doesNotMatch(html, /BOSS直聘求职辅助工具|>MVP</);
+  assert.match(html, /class="app-header"[^>]*aria-hidden="true"/);
+  assert.match(read(`${entries.sidePanel}/styles.css`), /\.app-header[\s\S]*min-height:\s*30px/);
   assert.match(read("src/shared/styles/base.css"), /\[hidden\]\s*\{\s*display:\s*none\s*!important/);
 });
 
-test("workbench exposes concurrency, status filters and task history", () => {
+test("workbench exposes status filters and task history while concurrency stays in the popup", () => {
   const html = read(`${entries.workbench}/index.html`);
-  assert.match(html, /id="concurrency"/);
-  assert.match(html, /value="2">2 个（推荐）/);
+  assert.doesNotMatch(html, /id="concurrency"|>并行任务</);
+  assert.match(read(`${entries.popup}/index.html`), /id="queue-concurrency"/);
   assert.match(html, /data-filter="completed"/);
   assert.match(html, /id="task-list"/);
   assert.match(html, /id="clear-history"/);
+  assert.match(html, /id="select-all"/);
+  assert.match(html, /id="batch-reanalyze"/);
+  assert.match(html, /id="batch-delete"/);
   const statuses = read("src/shared/constants/task-status.mjs");
   for (const status of ["COMPLETED", "FAILED", "CANCELED"]) assert.match(statuses, new RegExp(`${status}:`));
+});
+
+test("history retention prunes only terminal tasks in the background", () => {
+  const policy = read("src/features/tasks/queue-policy.mjs");
+  const queue = read("src/entries/background/queue-controller.mjs");
+  assert.match(policy, /HISTORY_LIMIT_OPTIONS.*10, 20, 30/);
+  assert.match(policy, /HISTORICAL_TASK_STATUSES/);
+  assert.match(queue, /pruneQueueHistory/);
+  assert.match(queue, /STORAGE_KEYS\.HISTORY_LIMIT/);
 });
 
 test("product name and company context are visible across primary pages", () => {
@@ -65,6 +97,28 @@ test("workbench is a queue client and can close without interrupting analysis", 
   assert.match(html, /工作台可以随时关闭/);
 });
 
+test("job page can enqueue directly and completed tasks expose contextual actions", () => {
+  const content = read("src/entries/content/content-script.js");
+  const bridge = read("src/platform/chrome/content-bridge.js");
+  const background = read("src/entries/background/current-job-controller.mjs");
+  assert.match(content, /bridge\.enqueueCurrentJob\(\)/);
+  assert.match(content, /查看结果/);
+  assert.match(content, /重新分析/);
+  assert.match(bridge, /ENQUEUE_CURRENT_JOB/);
+  assert.match(background, /findExactTask/);
+  assert.match(background, /needsSetup/);
+  assert.match(content, /actions\.length \? 9000 : 1000/);
+  assert.match(content, /job-resume-assistant-notice-close/);
+  assert.match(content, /aria-label", "关闭提示"/);
+});
+
+test("completed workbench results use a native same-tab link", () => {
+  const view = read(`${entries.workbench}/view.mjs`);
+  assert.match(view, /node\("a", "", "查看结果"\)/);
+  assert.match(view, /link\.href = chrome\.runtime\.getURL/);
+  assert.doesNotMatch(view, /link\.target|preventDefault/);
+});
+
 test("resume upload and editing are separate explicit steps", () => {
   assert.match(read(`${entries.sidePanel}/index.html`), /type="file"[^>]*accept="application\/pdf,.pdf"/);
   assert.match(read(`${entries.resumeEditor}/index.html`), /保存并完成同步/);
@@ -72,12 +126,21 @@ test("resume upload and editing are separate explicit steps", () => {
 
 test("results page separates report and resume exports", () => {
   const html = read(`${entries.results}/index.html`);
+  const reportView = read(`${entries.results}/report-view.mjs`);
+  const markdown = read("src/features/exports/markdown-exporter.mjs");
   assert.match(html, /data-tab="report"/);
   assert.match(html, /data-tab="resume"/);
   assert.match(html, /id="download-markdown"/);
   assert.match(html, /id="export-pdf"/);
   assert.match(html, /class="report-sidebar"/);
-  assert.match(html, />准备度概览<\/a>/);
+  assert.match(html, />是否适合投<\/a>/);
+  assert.match(html, />我有什么优势<\/a>/);
+  assert.match(html, />现在该做什么<\/a>/);
+  assert.match(html, /class="back-workbench-button"[^>]*href="\.\.\/workbench\/index\.html"/);
+  assert.doesNotMatch(html, /已完成|complete-badge/);
+  assert.doesNotMatch(reportView, /JD 依据/);
+  assert.doesNotMatch(markdown, /JD 依据/);
+  assert.doesNotMatch(html, /BOSS直聘岗位分析助手 · 分析完成/);
   assert.match(html, /href="#overview-section"/);
   assert.match(html, /href="#short-term-section"/);
   assert.match(html, /href="#interview-section"/);

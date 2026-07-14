@@ -4,6 +4,7 @@ import {
   putTask
 } from "../../platform/indexeddb/task-repository.mjs";
 import { HISTORICAL_TASK_STATUSES, TASK_STATUS } from "../../shared/constants/task-status.mjs";
+import { selectHistoricalTasksToPrune } from "./queue-policy.mjs";
 import { createTaskRecord } from "./task-model.mjs";
 
 export async function createTask(input) {
@@ -17,6 +18,13 @@ export async function clearHistoricalTasks() {
   const historical = tasks.filter((task) => HISTORICAL_TASK_STATUSES.has(task.status));
   await deleteTasks(historical.map((task) => task.id));
   return historical.length;
+}
+
+export async function pruneHistoricalTasks(limit) {
+  const tasks = await getAllTasks();
+  const expired = selectHistoricalTasksToPrune(tasks, limit);
+  await deleteTasks(expired.map((task) => task.id));
+  return expired.length;
 }
 
 export async function getTaskStats() {

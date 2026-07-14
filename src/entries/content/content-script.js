@@ -31,15 +31,40 @@
       || /extension context invalidated/i.test(String(error?.message || error));
   }
 
-  function showNotice(message, type = "error") {
+  function showNotice(message, type = "error", actions = []) {
     document.getElementById(NOTICE_ID)?.remove();
     const notice = document.createElement("div");
     notice.id = NOTICE_ID;
     notice.dataset.type = type;
     notice.setAttribute("role", type === "error" ? "alert" : "status");
-    notice.textContent = message;
+    const close = document.createElement("button");
+    close.className = "job-resume-assistant-notice-close";
+    close.type = "button";
+    close.textContent = "×";
+    close.setAttribute("aria-label", "关闭提示");
+    close.addEventListener("click", () => notice.remove());
+    const copy = document.createElement("span");
+    copy.textContent = message;
+    notice.append(close, copy);
+    if (actions.length) {
+      const actionRow = document.createElement("div");
+      actionRow.className = "job-resume-assistant-notice-actions";
+      actions.forEach(({ label, handler, primary = false }) => {
+        const action = document.createElement("button");
+        action.type = "button";
+        action.textContent = label;
+        action.dataset.primary = String(primary);
+        action.addEventListener("click", async () => {
+          action.disabled = true;
+          try { await handler(); }
+          catch (error) { showNotice(`操作没有完成：${error?.message || error}`); }
+        });
+        actionRow.appendChild(action);
+      });
+      notice.appendChild(actionRow);
+    }
     document.body.appendChild(notice);
-    if (type !== "context") setTimeout(() => notice.remove(), 5000);
+    if (type !== "context") setTimeout(() => notice.remove(), actions.length ? 9000 : 1000);
   }
 
   async function handleClick(button) {
@@ -52,7 +77,21 @@
       await bridge.removeCurrentJob();
       const job = await extractor.captureStableJob();
       await bridge.saveCurrentJob(job);
-      await bridge.openSidePanel();
+      const result = await bridge.enqueueCurrentJob();
+      if (!result?.ok) {
+        if (result?.needsSetup) {
+          showNotice(result.message, "info");
+          await bridge.openSidePanel();
+          return;
+        }
+        throw new Error(result?.error || result?.message || "暂时无法加入分析队列");
+      }
+      if (result.status === "completed") {
+        showCompletedNotice(result);
+        return;
+      }
+      const type = result.status === "active" ? "info" : "success";
+      showNotice(result.message, type);
     } catch (error) {
       if (isContextInvalidError(error)) {
         contextInvalidated = true;
@@ -67,6 +106,28 @@
       button.disabled = false;
       button.textContent = originalText;
     }
+  }
+
+  function showCompletedNotice(result) {
+    showNotice(result.message, "info", [
+      {
+        label: "查看结果",
+        primary: true,
+        handler: async () => {
+          const response = await bridge.openTaskResult(result.taskId);
+          if (!response?.ok) throw new Error(response?.error || "无法打开分析结果");
+          document.getElementById(NOTICE_ID)?.remove();
+        }
+      },
+      {
+        label: "重新分析",
+        handler: async () => {
+          const response = await bridge.enqueueCurrentJob({ force: true });
+          if (!response?.ok) throw new Error(response?.error || response?.message || "无法重新分析");
+          showNotice(response.message, "success");
+        }
+      }
+    ]);
   }
 
   function renderButton() {

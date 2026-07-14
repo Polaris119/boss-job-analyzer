@@ -43,7 +43,7 @@ function strengthLine(item) {
 }
 
 function gapLine(item) {
-  return [`- 类型：${GAP_TYPES[item.type] || "关键差距"}`, `- 岗位需要：${item.jobNeed || "未说明"}`, `- JD 依据：${item.jdEvidence || "未说明"}`, `- 简历现状：${item.resumeEvidence.join("；") || "无明确证据"}`, `- 影响：${item.impact || "未说明"}`, `- 建议：${item.action || "未说明"}`].join("\n");
+  return [`- 类型：${GAP_TYPES[item.type] || "关键差距"}`, `- 岗位需要：${item.jobNeed || "未说明"}`, `- 简历现状：${item.resumeEvidence.join("；") || "无明确证据"}`, `- 影响：${item.impact || "未说明"}`, `- 建议：${item.action || "未说明"}`].join("\n");
 }
 
 function actionLine(item) {

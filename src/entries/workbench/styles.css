@@ -23,11 +23,21 @@ body { margin:0; color:var(--ink); background:var(--canvas); font:14px/1.55 -app
 .panel-head { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:18px; border-bottom:1px solid var(--line); }
 .panel-head h2,.panel-head p { margin:0; }
 .panel-head p { color:var(--muted); font-size:12px; }
+.batch-toolbar { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line); background:#f8fbfb; }
+.select-all-option { display:flex; align-items:center; gap:7px; color:#455355; font-size:12px; font-weight:700; }
+.select-all-option input,.task-selection input { width:16px; height:16px; accent-color:var(--teal); }
+#batch-summary { flex:1; color:var(--muted); font-size:12px; }
+.batch-actions { display:flex; gap:7px; }
+.batch-actions button { padding:7px 10px; border:0; border-radius:7px; color:var(--teal-dark); background:#e7f5f4; font-size:12px; font-weight:700; }
+.batch-actions button.danger { color:var(--danger); background:#fff0ee; }
+.batch-actions button:disabled { cursor:not-allowed; opacity:.42; }
 .filters { display:flex; gap:6px; padding:3px; border-radius:9px; background:#f0f4f4; }
 .filter { padding:6px 10px; border:0; border-radius:7px; color:var(--muted); background:transparent; }
 .filter.active { color:#fff; background:var(--teal); }
 .task-list { display:grid; gap:10px; padding:14px; }
-.task-card { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; padding:15px; border:1px solid var(--line); border-left:4px solid #cbd4d4; border-radius:10px; }
+.task-card { display:grid; grid-template-columns:20px minmax(0,1fr) auto; gap:12px; padding:15px; border:1px solid var(--line); border-left:4px solid #cbd4d4; border-radius:10px; }
+.task-card.selected { border-color:#70c8c4; background:#f4fbfa; }
+.task-selection { display:flex; align-items:flex-start; justify-content:center; min-height:18px; padding-top:2px; }
 .task-card[data-status="running"] { border-left-color:var(--teal); background:#f7fcfc; }
 .task-card[data-status="completed"] { border-left-color:#1f9d63; }
 .task-card[data-status="failed"] { border-left-color:var(--danger); }
@@ -39,10 +49,10 @@ body { margin:0; color:var(--ink); background:var(--canvas); font:14px/1.55 -app
 .status-badge.completed { color:#087c45; background:#e6f6ec; }
 .status-badge.failed { color:#a52a21; background:#ffebe8; }
 .task-actions { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:6px; max-width:330px; }
-.task-actions button { padding:7px 9px; border:0; border-radius:7px; color:var(--teal-dark); background:#e7f5f4; font-size:12px; }
+.task-actions button,.task-actions a { padding:7px 9px; border:0; border-radius:7px; color:var(--teal-dark); background:#e7f5f4; font-size:12px; text-decoration:none; }
 .task-actions button.danger { color:var(--danger); background:#fff0ee; }
 .phase-progress { width:180px; height:5px; margin-top:9px; overflow:hidden; border-radius:99px; background:#e5ecec; }
 .phase-progress span { display:block; height:100%; background:var(--teal); transition:width .2s ease; }
 .empty { padding:70px 20px; color:var(--muted); text-align:center; }
 .toast { position:fixed; right:24px; bottom:24px; z-index:5; padding:13px 18px; border-radius:10px; color:#fff; background:#087c45; box-shadow:0 8px 24px rgba(0,0,0,.18); }
-@media(max-width:760px){ .workbench-header,.panel-head { align-items:flex-start; flex-direction:column; } .runner-controls { width:100%; } .stats-grid { grid-template-columns:repeat(2,1fr); } .task-card { grid-template-columns:1fr; } .task-actions { justify-content:flex-start; } .keep-open-note { flex-direction:column; } }
+@media(max-width:760px){ .workbench-header,.panel-head { align-items:flex-start; flex-direction:column; } .runner-controls { width:100%; } .stats-grid { grid-template-columns:repeat(2,1fr); } .batch-toolbar { align-items:flex-start; flex-wrap:wrap; } #batch-summary { flex-basis:calc(100% - 150px); } .batch-actions { width:100%; } .task-card { grid-template-columns:20px minmax(0,1fr); } .task-actions { grid-column:2; justify-content:flex-start; } .keep-open-note { flex-direction:column; } }
