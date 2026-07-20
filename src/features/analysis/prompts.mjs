@@ -67,14 +67,25 @@ export function buildPreparationMessages(task, roleProfile, analysis) {
 export function buildResumeMessages(task, analysis) {
   const schema = {
     fullName: "姓名；无法确认则为空",
-    headline: "目标职位标题",
-    contactLine: "只使用简历已有联系方式",
+    politicalStatus: "政治面貌；只使用基础简历已有信息，没有则为空",
+    email: "邮箱；只使用基础简历已有信息，没有则为空",
+    birthDate: "出生年月；只使用基础简历已有信息，没有则为空",
+    phone: "手机号；只使用基础简历已有信息，没有则为空",
     summary: "个人概述",
-    sections: [{ title: "工作经历", items: ["完整条目"] }],
+    sections: [{
+      title: "工作经历",
+      kind: "standard|awards；荣誉奖项区块必须为 awards，其他为 standard",
+      entries: [{
+        date: "经历时间；没有则为空",
+        organization: "学校、公司或项目名称；没有则为空",
+        position: "学历、专业、职位或项目角色；没有则为空",
+        bullets: [{ label: "简短加粗标签；不适合则为空", text: "只使用基础简历事实的完整描述" }]
+      }]
+    }],
     pendingConfirmations: [{ id: "C1", text: "需要用户确认的内容", reason: "为什么不能直接采用" }]
   };
   return [
-    { role: "system", content: "你是简历编辑，不是简历作者。只重新组织和改写已存在的事实。禁止新增原简历没有的技能、项目、公司、成果、数字或联系方式。无法确认但可能有价值的内容只能放入 pendingConfirmations，不能写入正式简历。保持时间、公司、职位和学校等事实一致。输出合法 JSON 对象，不要使用 Markdown 代码块。" },
+    { role: "system", content: "你是简历编辑，不是简历作者。只重新组织和改写已存在的事实。禁止新增原简历没有的技能、项目、公司、成果、数字、联系方式、出生年月或政治面貌。无法确认但可能有价值的内容只能放入 pendingConfirmations，不能写入正式简历。保持时间、公司、职位和学校等事实一致。简历使用通用单栏模板：每个区块包含若干经历，每段经历的时间、机构和职位必须分别放入 date、organization、position；具体内容拆为 bullets。label 只放适合加粗的短标签，不要把完整句子放入 label。荣誉奖项区块的 kind 必须为 awards，每个奖项单独作为一条 entry，奖项完整名称放入 organization，获奖时间放入 date，position 和 bullets 保持为空。不适用的字段保持为空，不得为了填满结构而编造。输出合法 JSON 对象，不要使用 Markdown 代码块。" },
     { role: "user", content: `请针对当前岗位生成一份结构完整的定制简历。\n\n基础简历：\n${JSON.stringify(resumeForPrompt(task.resumeSnapshot))}\n\n岗位分析：\n${JSON.stringify(analysis)}\n\n输出结构：\n${JSON.stringify(schema)}` }
   ];
 }

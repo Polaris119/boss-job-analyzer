@@ -22,7 +22,7 @@ export async function generatePreparationPlan(task, roleProfile, analysis, apiKe
 
 export async function generateOptimizedResume(task, analysis, apiKey) {
   const text = await request(task.aiConfig, apiKey, buildResumeMessages(task, analysis), true);
-  return normalizeOptimizedResume(parseJsonResponse(text), task.job?.title);
+  return normalizeOptimizedResume(parseJsonResponse(text));
 }
 
 function request(config, apiKey, messages, jsonMode) {

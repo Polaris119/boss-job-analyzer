@@ -151,8 +151,35 @@ test("resume editor supports theme colors and structural editing", () => {
   const script = read(`${entries.results}/controller.mjs`);
   assert.match(html, /id="resume-theme-color"[^>]*type="color"/);
   assert.match(html, /id="add-resume-section"/);
+  assert.match(html, /经典蓝色单栏/);
+  assert.match(html, /id="resume-photo-file"[^>]*accept="image\/jpeg,image\/png,image\/webp/);
+  assert.match(html, /id="show-resume-photo"/);
+  assert.match(html, /id="delete-resume-photo"/);
   assert.match(script, /moveSection/);
   assert.match(script, /moveItem/);
+  assert.match(script, /prepareResumePhoto/);
+  assert.match(script, /renderResumeBullet/);
+  assert.match(script, /renderAwardEntry/);
+  assert.match(script, /政治面貌/);
+  assert.match(script, /出生年月/);
+  const print = read("src/entries/resume-print/controller.mjs");
+  const printStyles = read("src/entries/resume-print/styles.css");
+  assert.match(print, /presentation\.showPhoto/);
+  assert.doesNotMatch(print, /求职意向/);
+  assert.match(print, /award-entry/);
+  assert.match(print, /paginateResume/);
+  assert.match(print, /createPage/);
+  assert.match(print, /continuationShell/);
+  assert.match(print, /content\.scrollHeight > content\.clientHeight/);
+  assert.match(printStyles, /\.personal-details/);
+  assert.match(printStyles, /\.award-entry/);
+  assert.match(printStyles, /\.resume-page\s*\{[\s\S]*height:\s*297mm/);
+  assert.match(printStyles, /break-after:\s*page/);
+  assert.match(printStyles, /\.resume-header\.with-photo/);
+  assert.match(printStyles, /\.resume-header\.without-photo/);
+  assert.match(printStyles, /\.resume-header\.with-photo \.resume-photo\s*\{[^}]*position:\s*absolute/);
+  assert.match(printStyles, /\.resume-header\.with-photo \+ \.resume-section/);
+  assert.match(printStyles, /@page\s*\{\s*size:\s*A4/);
 });
 
 test("tasks can skip resume generation and results hide unavailable resume UI", () => {

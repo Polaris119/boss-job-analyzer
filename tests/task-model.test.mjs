@@ -15,6 +15,7 @@ test("task creation freezes only non-secret AI configuration", () => {
   assert.equal(task.stage, "profile");
   assert.equal(task.roleProfile, null);
   assert.equal(task.preparation, null);
+  assert.deepEqual(task.resumePresentation, { templateId: "classic-blue", photo: null, showPhoto: false });
 });
 
 test("task creation freezes disabled resume generation", () => {

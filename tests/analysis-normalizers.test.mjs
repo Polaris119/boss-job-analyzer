@@ -38,5 +38,26 @@ test("normalizePreparation preserves conditional interview output", () => {
 });
 
 test("normalizeOptimizedResume rejects an empty formal resume", () => {
-  assert.throws(() => normalizeOptimizedResume({ sections: [] }, "AI 工程师"), /没有生成有效的简历章节/);
+  assert.throws(() => normalizeOptimizedResume({ sections: [] }), /没有生成有效的简历章节/);
+  assert.throws(() => normalizeOptimizedResume({ sections: [{ title: "旧版", items: ["旧版内容"] }] }), /没有生成有效的简历章节/);
+});
+
+test("normalizeOptimizedResume preserves structured resume entries", () => {
+  const resume = normalizeOptimizedResume({
+    fullName: "张三",
+    politicalStatus: "中共党员",
+    email: "example@example.com",
+    birthDate: "2000.05",
+    phone: "138-0000-0000",
+    sections: [{
+      title: "工作经历",
+      entries: [{ date: "2024—至今", organization: "示例科技", position: "后端工程师", bullets: [{ label: "项目成果", text: "完成服务治理" }] }]
+    }]
+  });
+  assert.equal(resume.politicalStatus, "中共党员");
+  assert.equal(resume.email, "example@example.com");
+  assert.equal(resume.birthDate, "2000.05");
+  assert.equal(resume.phone, "138-0000-0000");
+  assert.equal(resume.sections[0].entries[0].organization, "示例科技");
+  assert.deepEqual(resume.sections[0].entries[0].bullets[0], { label: "项目成果", text: "完成服务治理" });
 });

@@ -1,3 +1,5 @@
+import { hasResumeContent, normalizeResumeDocument } from "../resume/resume-document.mjs";
+
 export function parseJsonResponse(text) {
   const cleaned = String(text).trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   try {
@@ -107,24 +109,20 @@ export function normalizePreparation(value) {
   };
 }
 
-export function normalizeOptimizedResume(value, jobTitle) {
+export function normalizeOptimizedResume(value) {
   if (!value || typeof value !== "object") throw new Error("定制简历结果格式错误");
-  const sections = array(value.sections)
-    .map((section) => ({ title: string(section.title), items: strings(section.items) }))
-    .filter((section) => section.title && section.items.length);
-  if (!sections.length) throw new Error("模型没有生成有效的简历章节");
-  return {
+  const resume = normalizeResumeDocument({
     fullName: string(value.fullName),
-    headline: string(value.headline) || jobTitle || "",
-    contactLine: string(value.contactLine),
+    politicalStatus: string(value.politicalStatus),
+    email: string(value.email),
+    birthDate: string(value.birthDate),
+    phone: string(value.phone),
     summary: string(value.summary),
-    sections,
-    pendingConfirmations: array(value.pendingConfirmations).map((item, index) => ({
-      id: string(item.id) || `C${index + 1}`,
-      text: string(item.text),
-      reason: string(item.reason)
-    })).filter((item) => item.text)
-  };
+    sections: value.sections,
+    pendingConfirmations: value.pendingConfirmations
+  });
+  if (!hasResumeContent(resume)) throw new Error("模型没有生成有效的简历章节");
+  return resume;
 }
 
 function normalizeRoadmap(value, prefix) {

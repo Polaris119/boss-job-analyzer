@@ -1,17 +1,16 @@
 @import url("../../shared/styles/base.css");
 
 :root {
-  --ink: #1c2528;
-  --muted: #667175;
-  --teal: #087f7c;
-  --line: #d8dede;
+  --resume-accent: #24548f;
+  --resume-ink: #111820;
+  --resume-muted: #38434b;
 }
 
 body {
   margin: 0;
-  color: var(--ink);
-  background: #e8eded;
-  font: 14px/1.58 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--resume-ink);
+  background: #e9eded;
+  font: 11.2pt/1.54 "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
 }
 
 .toolbar {
@@ -29,37 +28,69 @@ body {
 
 .toolbar div { display: grid; }
 .toolbar span { opacity: .75; font-size: 12px; }
-.toolbar button { padding: 9px 16px; border: 0; border-radius: 8px; color: #fff; background: var(--teal); font: inherit; font-weight: 700; cursor: pointer; }
+.toolbar button { padding: 9px 16px; border: 0; border-radius: 8px; color: #fff; background: #0aa7a4; font: inherit; font-weight: 700; cursor: pointer; }
 
+.resume-pages { padding: 1px 0 24px; }
 .resume-page {
   width: 210mm;
-  min-height: 297mm;
+  height: 297mm;
   margin: 18px auto;
-  padding: 17mm 18mm;
+  padding: 12mm 14mm 14mm;
+  overflow: hidden;
   background: #fff;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
 }
+.resume-page-content { height: 100%; overflow: hidden; }
 
-.resume-header { padding-bottom: 12px; border-bottom: 3px solid var(--teal); }
-.resume-header h1 { margin: 0; font-size: 28px; letter-spacing: .06em; }
-.headline { margin: 3px 0 0; color: var(--teal); font-size: 16px; font-weight: 700; }
-.contact { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
-.summary { margin: 14px 0 0; }
+.resume-header { display: grid; align-items: start; }
+.resume-header.with-photo { position: relative; grid-template-columns: minmax(0,1fr); padding-right: 33mm; }
+.resume-header.without-photo { grid-template-columns: 1fr; }
+.resume-identity { min-width: 0; }
+.resume-header h1 { margin: 0 0 5mm; font-size: 23pt; line-height: 1.05; letter-spacing: .16em; }
+.personal-details { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1.5fr); column-gap: 10mm; row-gap: 2.2mm; color: var(--resume-muted); font-size: 10.5pt; }
+.personal-detail { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 1mm; margin: 0; min-width: 0; }
+.personal-label { white-space: nowrap; }
+.personal-value { min-width: 0; overflow-wrap: anywhere; }
+.political-status { grid-column: 1; grid-row: 1; }
+.email { grid-column: 2; grid-row: 1; }
+.birth-date { grid-column: 1; grid-row: 2; }
+.phone { grid-column: 2; grid-row: 2; }
+.resume-photo { width: 25mm; height: 35mm; border: .25mm solid #d8dde2; object-fit: cover; background: #f2f4f5; }
+.resume-header.with-photo .resume-photo { position: absolute; top: 0; right: 0; }
+.resume-header.with-photo + .resume-section { padding-right: 33mm; }
 
-.resume-section { break-inside: avoid-page; margin-top: 17px; }
-.resume-section h2 { margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); color: var(--teal); font-size: 16px; }
-.resume-section ul { display: grid; gap: 7px; margin: 0; padding-left: 18px; }
-.resume-section li { white-space: pre-line; }
-.empty { color: var(--muted); text-align: center; }
+.resume-section { margin-top: 3.2mm; }
+.resume-section-continuation { margin-top: 0; }
+.resume-section h2 { margin: 0 0 2mm; padding-bottom: .7mm; border-bottom: .65mm solid var(--resume-accent); color: var(--resume-accent); font-size: 13.5pt; line-height: 1.15; break-after: avoid-page; }
+.summary-copy { margin: 0; white-space: pre-line; }
+.resume-entry { break-inside: avoid-page; margin-top: 1.8mm; }
+.resume-entry:first-of-type { margin-top: 0; }
+.resume-entry-meta { display: grid; grid-template-columns: 40mm minmax(0,1fr) 50mm; gap: 3mm; align-items: baseline; min-height: 5.5mm; font-size: 11.2pt; }
+.entry-date { font-weight: 700; }
+.entry-organization { text-align: center; }
+.entry-position { text-align: right; }
+.award-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8mm; align-items: baseline; margin-top: 1.8mm; break-inside: avoid-page; }
+.award-entry:first-of-type { margin-top: 0; }
+.award-content { text-align: left; }
+.award-date { text-align: right; white-space: nowrap; }
+.resume-bullets { display: grid; gap: 1.2mm; margin: 1.1mm 0 0; padding-left: 5.5mm; }
+.resume-bullets li { padding-left: .5mm; white-space: pre-line; }
+.resume-bullets li::marker { font-size: .85em; }
+.resume-bullets strong { font-weight: 750; }
+.empty { color: var(--resume-muted); text-align: center; }
 
 @page { size: A4; margin: 0; }
 
 @media print {
   body { background: #fff; }
   .toolbar { display: none; }
-  .resume-page { width: auto; min-height: auto; margin: 0; box-shadow: none; }
+  .resume-pages { padding: 0; }
+  .resume-page { width: 210mm; height: 297mm; margin: 0; padding: 12mm 14mm 14mm; break-after: page; box-shadow: none; }
+  .resume-page:last-child { break-after: auto; }
 }
 
 @media screen and (max-width: 900px) {
-  .resume-page { width: calc(100% - 24px); padding: 28px; }
+  body { overflow-x: auto; }
+  .toolbar { min-width: 720px; }
+  .resume-page { margin: 12px; transform-origin: top left; }
 }

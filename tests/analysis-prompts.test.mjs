@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildAnalysisMessages, buildPreparationMessages, buildRoleProfileMessages } from "../src/features/analysis/prompts.mjs";
+import { buildAnalysisMessages, buildPreparationMessages, buildResumeMessages, buildRoleProfileMessages } from "../src/features/analysis/prompts.mjs";
 
 const task = {
   job: { title: "产品运营", description: "负责用户增长和留存" },
@@ -29,4 +29,14 @@ test("preparation planning is constrained to diagnosed knowledge points", () => 
   assert.match(messages[1].content, /K1/);
   assert.match(messages[0].content, /不得新增或改写诊断结论/);
   assert.match(messages[0].content, /readiness 为 ready 或 near_ready/);
+});
+
+test("resume generation uses separate personal fields and a dedicated awards layout", () => {
+  const messages = buildResumeMessages(task, { readiness: { level: "near_ready" } });
+  assert.match(messages[1].content, /politicalStatus/);
+  assert.match(messages[1].content, /birthDate/);
+  assert.match(messages[1].content, /phone/);
+  assert.match(messages[1].content, /email/);
+  assert.match(messages[0].content, /荣誉奖项区块的 kind 必须为 awards/);
+  assert.doesNotMatch(messages[1].content, /contactLine|headline/);
 });

@@ -1,6 +1,7 @@
 import { TASK_STATUS } from "../../shared/constants/task-status.mjs";
+import { DEFAULT_RESUME_THEME, normalizeResumePresentation } from "../resume/resume-document.mjs";
 
-export const DEFAULT_RESUME_THEME = "#087f7c";
+export { DEFAULT_RESUME_THEME };
 
 export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume = true, roleProfile = null, sourceTaskId = null }) {
   const now = new Date().toISOString();
@@ -24,6 +25,7 @@ export function createTaskRecord({ job, resumeSnapshot, aiConfig, generateResume
     preparation: null,
     optimizedResume: null,
     resumeThemeColor: DEFAULT_RESUME_THEME,
+    resumePresentation: normalizeResumePresentation(),
     error: "",
     attempts: 0,
     recoveryCount: 0,

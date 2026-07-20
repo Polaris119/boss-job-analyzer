@@ -1,4 +1,15 @@
 import { buildAnalysisMarkdown } from "../../features/exports/markdown-exporter.mjs";
+import { prepareResumePhoto } from "../../features/resume/photo-processor.mjs";
+import {
+  createResumeBullet,
+  createResumeEntry,
+  createResumeSection,
+  DEFAULT_RESUME_THEME,
+  hasResumeContent,
+  inferResumeSectionKind,
+  normalizeResumeDocument,
+  normalizeResumePresentation
+} from "../../features/resume/resume-document.mjs";
 import { localStore } from "../../platform/chrome/storage.mjs";
 import { openExtensionPage } from "../../platform/chrome/tabs.mjs";
 import { getTask, putTask } from "../../platform/indexeddb/task-repository.mjs";
@@ -11,7 +22,7 @@ import { formatDate, safeFilename, validThemeColor } from "../../shared/utils/va
 import { renderReport } from "./report-view.mjs";
 
 const state = { record: null };
-const ids = ["job-title", "job-meta", "report-panel", "resume-panel", "overview-section", "strengths-section", "gaps-section", "actions-section", "knowledge-section", "short-term-section", "long-term-section", "interview-section", "resume-fields", "resume-theme-color", "add-resume-section", "download-markdown", "save-result", "export-pdf", "empty", "toast"];
+const ids = ["job-title", "job-meta", "report-panel", "resume-panel", "overview-section", "strengths-section", "gaps-section", "actions-section", "knowledge-section", "short-term-section", "long-term-section", "interview-section", "resume-fields", "resume-theme-color", "add-resume-section", "download-markdown", "save-result", "export-pdf", "resume-photo-file", "resume-photo-preview", "resume-photo-empty", "resume-photo-upload-text", "show-resume-photo", "delete-resume-photo", "empty", "toast"];
 const elements = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
 
 document.addEventListener("DOMContentLoaded", initialize);
@@ -27,7 +38,12 @@ async function initialize() {
     elements["report-panel"].hidden = true;
     return;
   }
-  state.record.resumeThemeColor = validThemeColor(state.record.resumeThemeColor) ? state.record.resumeThemeColor : "#087f7c";
+  state.record.resumeThemeColor = validThemeColor(state.record.resumeThemeColor) ? state.record.resumeThemeColor : DEFAULT_RESUME_THEME;
+  if (state.record.optimizedResume) {
+    state.record.optimizedResume = normalizeResumeDocument(state.record.optimizedResume);
+    if (!hasResumeContent(state.record.optimizedResume)) state.record.optimizedResume = null;
+  }
+  state.record.resumePresentation = normalizeResumePresentation(state.record.resumePresentation);
   render();
 }
 
@@ -37,6 +53,9 @@ function bindEvents() {
   elements["save-result"].addEventListener("click", saveRecord);
   elements["export-pdf"].addEventListener("click", exportPdf);
   elements["add-resume-section"].addEventListener("click", addResumeSection);
+  elements["resume-photo-file"].addEventListener("change", uploadResumePhoto);
+  elements["show-resume-photo"].addEventListener("change", toggleResumePhoto);
+  elements["delete-resume-photo"].addEventListener("click", deleteResumePhoto);
   elements["resume-theme-color"].addEventListener("input", (event) => {
     state.record.resumeThemeColor = event.target.value;
     applyResumeTheme();
@@ -85,7 +104,8 @@ function renderResume() {
   const resume = state.record.optimizedResume;
   const container = elements["resume-fields"];
   container.replaceChildren();
-  [["姓名", "fullName"], ["目标定位", "headline"], ["联系方式", "contactLine"], ["个人概述", "summary"]].forEach(([labelText, key]) => {
+  renderPhotoControls();
+  [["姓名", "fullName"], ["政治面貌", "politicalStatus"], ["邮箱", "email"], ["出生年月", "birthDate"], ["手机号", "phone"], ["个人概述", "summary"]].forEach(([labelText, key]) => {
     const label = node("label", "field");
     label.append(node("span", "", labelText));
     const control = document.createElement(key === "summary" ? "textarea" : "input");
@@ -101,7 +121,11 @@ function renderResume() {
     title.className = "section-title";
     title.value = section.title;
     title.setAttribute("aria-label", "简历章节标题");
-    title.addEventListener("input", () => { section.title = title.value; });
+    title.addEventListener("input", () => {
+      section.title = title.value;
+      section.kind = inferResumeSectionKind(title.value);
+    });
+    title.addEventListener("change", () => renderResume());
     const sectionActions = node("div", "edit-actions");
     sectionActions.append(
       actionButton("上移", sectionIndex === 0, () => moveSection(sectionIndex, -1)),
@@ -110,23 +134,13 @@ function renderResume() {
     );
     sectionHead.append(title, sectionActions);
     sectionEditor.append(sectionHead);
-    section.items.forEach((item, itemIndex) => {
-      const itemEditor = node("div", "resume-item-editor");
-      const textarea = document.createElement("textarea");
-      textarea.className = "resume-item";
-      textarea.value = item;
-      textarea.setAttribute("aria-label", `${section.title}第 ${itemIndex + 1} 条`);
-      textarea.addEventListener("input", () => { section.items[itemIndex] = textarea.value; });
-      const itemActions = node("div", "edit-actions item-actions");
-      itemActions.append(
-        actionButton("上移", itemIndex === 0, () => moveItem(sectionIndex, itemIndex, -1)),
-        actionButton("下移", itemIndex === section.items.length - 1, () => moveItem(sectionIndex, itemIndex, 1)),
-        actionButton("删除", false, () => { section.items.splice(itemIndex, 1); renderResume(); })
-      );
-      itemEditor.append(textarea, itemActions);
-      sectionEditor.append(itemEditor);
+    section.entries.forEach((entry, entryIndex) => sectionEditor.append(renderResumeEntry(section, sectionIndex, entry, entryIndex)));
+    const addItem = actionButton(section.kind === "awards" ? "+ 添加奖项" : "+ 添加经历", false, () => {
+      const entry = createResumeEntry();
+      if (section.kind === "awards") entry.bullets = [];
+      section.entries.push(entry);
+      renderResume();
     });
-    const addItem = actionButton("+ 添加条目", false, () => { section.items.push(""); renderResume(); });
     addItem.classList.add("add-item-button");
     sectionEditor.append(addItem);
     container.append(sectionEditor);
@@ -134,7 +148,7 @@ function renderResume() {
 }
 
 function addResumeSection() {
-  state.record.optimizedResume.sections.push({ title: "新建区块", items: [""] });
+  state.record.optimizedResume.sections.push(createResumeSection());
   renderResume();
   elements["resume-fields"].lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -148,11 +162,127 @@ function moveSection(index, offset) {
 }
 
 function moveItem(sectionIndex, itemIndex, offset) {
-  const items = state.record.optimizedResume.sections[sectionIndex].items;
+  const items = state.record.optimizedResume.sections[sectionIndex].entries;
   const nextIndex = itemIndex + offset;
   if (nextIndex < 0 || nextIndex >= items.length) return;
   [items[itemIndex], items[nextIndex]] = [items[nextIndex], items[itemIndex]];
   renderResume();
+}
+
+function renderResumeEntry(section, sectionIndex, entry, entryIndex) {
+  if (section.kind === "awards") return renderAwardEntry(section, sectionIndex, entry, entryIndex);
+  const wrapper = node("article", "resume-experience-editor");
+  const head = node("div", "experience-editor-head");
+  head.append(node("strong", "", `经历 ${entryIndex + 1}`));
+  const actions = node("div", "edit-actions");
+  actions.append(
+    actionButton("上移", entryIndex === 0, () => moveItem(sectionIndex, entryIndex, -1)),
+    actionButton("下移", entryIndex === section.entries.length - 1, () => moveItem(sectionIndex, entryIndex, 1)),
+    actionButton("删除经历", false, () => { section.entries.splice(entryIndex, 1); renderResume(); })
+  );
+  head.append(actions);
+  const meta = node("div", "experience-meta-fields");
+  [["时间", "date"], ["机构 / 项目", "organization"], ["职位 / 专业", "position"]].forEach(([labelText, key]) => {
+    const label = node("label", "compact-field");
+    label.append(node("span", "", labelText));
+    const input = document.createElement("input");
+    input.value = entry[key] || "";
+    input.addEventListener("input", () => { entry[key] = input.value; });
+    label.append(input);
+    meta.append(label);
+  });
+  const bullets = node("div", "resume-bullet-editors");
+  entry.bullets.forEach((bullet, bulletIndex) => bullets.append(renderResumeBullet(entry, bullet, bulletIndex)));
+  const addBullet = actionButton("+ 添加内容", false, () => { entry.bullets.push(createResumeBullet()); renderResume(); });
+  addBullet.classList.add("add-item-button", "compact-add-button");
+  wrapper.append(head, meta, bullets, addBullet);
+  return wrapper;
+}
+
+function renderAwardEntry(section, sectionIndex, entry, entryIndex) {
+  const wrapper = node("article", "resume-experience-editor award-editor");
+  const head = node("div", "experience-editor-head");
+  head.append(node("strong", "", `奖项 ${entryIndex + 1}`));
+  const actions = node("div", "edit-actions");
+  actions.append(
+    actionButton("上移", entryIndex === 0, () => moveItem(sectionIndex, entryIndex, -1)),
+    actionButton("下移", entryIndex === section.entries.length - 1, () => moveItem(sectionIndex, entryIndex, 1)),
+    actionButton("删除奖项", false, () => { section.entries.splice(entryIndex, 1); renderResume(); })
+  );
+  head.append(actions);
+  const fields = node("div", "experience-meta-fields award-meta-fields");
+  [["奖项内容", "organization"], ["获奖时间", "date"]].forEach(([labelText, key]) => {
+    const label = node("label", "compact-field");
+    label.append(node("span", "", labelText));
+    const input = document.createElement("input");
+    input.value = entry[key] || "";
+    input.addEventListener("input", () => { entry[key] = input.value; });
+    label.append(input);
+    fields.append(label);
+  });
+  wrapper.append(head, fields);
+  return wrapper;
+}
+
+function renderResumeBullet(entry, bullet, bulletIndex) {
+  const row = node("div", "resume-bullet-editor");
+  const label = document.createElement("input");
+  label.className = "bullet-label-input";
+  label.placeholder = "加粗标签（可空）";
+  label.value = bullet.label || "";
+  label.setAttribute("aria-label", `第 ${bulletIndex + 1} 条内容标签`);
+  label.addEventListener("input", () => { bullet.label = label.value; });
+  const text = document.createElement("textarea");
+  text.placeholder = "具体内容";
+  text.value = bullet.text || "";
+  text.setAttribute("aria-label", `第 ${bulletIndex + 1} 条具体内容`);
+  text.addEventListener("input", () => { bullet.text = text.value; });
+  const remove = actionButton("删除", false, () => { entry.bullets.splice(bulletIndex, 1); renderResume(); });
+  row.append(label, text, remove);
+  return row;
+}
+
+function renderPhotoControls() {
+  const presentation = state.record.resumePresentation;
+  const hasPhoto = Boolean(presentation.photo?.dataUrl);
+  elements["resume-photo-preview"].hidden = !hasPhoto;
+  elements["resume-photo-empty"].hidden = hasPhoto;
+  elements["delete-resume-photo"].hidden = !hasPhoto;
+  elements["resume-photo-upload-text"].textContent = hasPhoto ? "替换照片" : "上传证件照";
+  elements["show-resume-photo"].disabled = !hasPhoto;
+  elements["show-resume-photo"].checked = hasPhoto && presentation.showPhoto;
+  elements["resume-photo-preview"].src = hasPhoto ? presentation.photo.dataUrl : "";
+}
+
+async function uploadResumePhoto(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const photo = await prepareResumePhoto(file);
+    state.record.resumePresentation.photo = photo;
+    state.record.resumePresentation.showPhoto = true;
+    renderPhotoControls();
+    await saveRecord(false);
+    showToast("证件照已在本机处理并保存。", true);
+  } catch (error) {
+    showToast(error?.message || String(error), false);
+  }
+}
+
+async function toggleResumePhoto(event) {
+  state.record.resumePresentation.showPhoto = Boolean(state.record.resumePresentation.photo && event.target.checked);
+  await saveRecord(false);
+  showToast(event.target.checked ? "导出时会显示证件照。" : "导出时将使用无照片排版。", true);
+}
+
+async function deleteResumePhoto() {
+  if (!window.confirm("确定删除本机保存的这张证件照吗？")) return;
+  state.record.resumePresentation.photo = null;
+  state.record.resumePresentation.showPhoto = false;
+  renderPhotoControls();
+  await saveRecord(false);
+  showToast("证件照已删除，将使用无照片排版。", true);
 }
 
 function actionButton(text, disabled, handler) {
@@ -186,7 +316,7 @@ function downloadMarkdown() {
 
 async function exportPdf() {
   await saveRecord(false);
-  await localStore.set({ [STORAGE_KEYS.PRINT_RESUME]: { job: state.record.job, resume: state.record.optimizedResume, themeColor: state.record.resumeThemeColor, generatedAt: new Date().toISOString() } });
+  await localStore.set({ [STORAGE_KEYS.PRINT_RESUME]: { job: state.record.job, resume: state.record.optimizedResume, presentation: state.record.resumePresentation, themeColor: state.record.resumeThemeColor, generatedAt: new Date().toISOString() } });
   await openExtensionPage(ROUTES.RESUME_PRINT);
 }
 

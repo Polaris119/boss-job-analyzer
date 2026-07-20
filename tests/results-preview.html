@@ -12,12 +12,16 @@
           <div class="report-content"><section id="overview-section" class="content-card overview-card" data-report-section></section><section id="strengths-section" class="content-card" data-report-section></section><section id="gaps-section" class="content-card" data-report-section></section><section id="actions-section" class="content-card" data-report-section></section><section id="knowledge-section" class="content-card" data-report-section></section><section id="short-term-section" class="content-card" data-report-section></section><section id="long-term-section" class="content-card" data-report-section></section><section id="interview-section" class="content-card" data-report-section></section></div>
         </div>
       </section>
-      <section id="resume-panel" class="panel" hidden><div class="panel-toolbar"><h2>定制简历</h2><div class="toolbar-actions"><label class="theme-control">主题色 <input id="resume-theme-color" type="color" value="#6b4fa1"></label><button id="add-resume-section" class="secondary-button">新增区块</button><button id="save-result" class="secondary-button">保存修改</button><button id="export-pdf" class="primary-button">导出 PDF</button></div></div><div id="resume-fields" class="resume-editor"></div></section>
+      <section id="resume-panel" class="panel" hidden>
+        <div class="panel-toolbar"><div><h2>定制简历</h2><p>经典蓝色单栏 · A4 自动分页</p></div><div class="toolbar-actions"><label class="theme-control">分隔线颜色 <input id="resume-theme-color" type="color" value="#24548f"></label><button id="add-resume-section" class="secondary-button">新增区块</button><button id="save-result" class="secondary-button">保存修改</button><button id="export-pdf" class="primary-button">预览并导出 PDF</button></div></div>
+        <div class="resume-template-settings"><div class="template-summary"><span class="template-swatch"></span><span><strong>经典蓝色单栏</strong><small>经历分列展示，奖项按内容与时间对齐；内容过长时自动分页。</small></span></div><section class="photo-settings"><div class="photo-preview-frame"><img id="resume-photo-preview" alt="证件照预览" hidden><span id="resume-photo-empty">未上传</span></div><div class="photo-settings-copy"><strong>证件照（可选）</strong><small>照片仅在本机裁剪和导出，不会发送给 AI 服务商。</small><div class="photo-actions"><label class="secondary-button photo-file-button"><input id="resume-photo-file" type="file" accept="image/jpeg,image/png,image/webp"><span id="resume-photo-upload-text">上传证件照</span></label><button id="delete-resume-photo" class="text-danger-button" hidden>删除照片</button></div><label class="photo-visible-option"><input id="show-resume-photo" type="checkbox" disabled><span>在导出的简历中显示证件照</span></label></div></section></div>
+        <div id="resume-fields" class="resume-editor"></div>
+      </section>
       <div id="empty" class="empty" hidden></div>
     </main><div id="toast" class="toast" hidden></div>
     <script>
       const demo = {
-        id:"demo", job:{title:"AI Agent 工程师",company:"示例科技",salary:"15-25K",url:"https://example.com"}, createdAt:new Date().toISOString(), resumeThemeColor:"#6b4fa1",
+        id:"demo", job:{title:"AI Agent 工程师",company:"示例科技",salary:"15-25K",url:"https://example.com"}, createdAt:new Date().toISOString(), resumeThemeColor:"#24548f",
         roleProfile:{primaryFamily:"data_ai",specialty:"AI Agent 应用工程",seniority:"senior",hiringIntent:"把 Agent 与 RAG 能力稳定地落地到真实业务",confidence:"high"},
         analysis:{
           readiness:{level:"near_ready",oneLiner:"核心技术方向匹配，当前最需要补足的是评测与线上效果证据。",rationale:"已有 RAG 工程实践，但简历尚未体现评测方法和稳定性结果。",confidence:"high"},
@@ -31,10 +35,13 @@
           longTermRoadmap:[{id:"L1",title:"积累线上评测与监控经验",relatedKnowledgePointIds:["K1"],duration:"持续积累",objective:"形成生产环境的质量保障能力",concepts:["在线反馈","质量监控"],practice:"在真实项目中跟踪失败案例并持续扩充评测集",deliverable:"版本化评测集与回归机制",completionCriteria:"每次变更都能发现质量退化"}],
           interview:{eligible:true,reason:"当前已达到基本投递要求",questions:[{id:"Q1",type:"evidence",question:"你如何证明知识库问答项目的检索效果是可靠的？",why:"岗位明确关注 Agent 评测与稳定性",assesses:"评测设计、指标理解和问题定位能力",resumeAnchor:"企业知识库问答项目",answerOutline:["说明评测目标","介绍测试集来源","解释指标和优化结果"],followUps:["如果没有标准答案如何评估？","线上效果下降如何定位？"]}]}
         },
-        optimizedResume:{fullName:"张三",headline:"AI Agent 工程师",contactLine:"南京 · example@example.com",summary:"后端工程师，具备 AI 应用项目经验。",sections:[{title:"项目经历",items:["企业知识库问答：完成文档切分、检索和答案引用链路。"]}],pendingConfirmations:[]}
+        optimizedResume:{fullName:"张三",politicalStatus:"中共党员",email:"example@example.com",birthDate:"2000.05",phone:"138-0000-0000",summary:"后端工程师，具备 AI 应用、知识库和工作流项目经验。",sections:[{title:"项目经历",kind:"standard",entries:[{date:"2024.03—2025.06",organization:"企业知识库问答平台",position:"核心开发",bullets:[{label:"技术架构",text:"完成文档切分、向量检索和答案引用链路。"},{label:"项目成果",text:"建立离线评测集并持续优化召回效果。"}]}]},{title:"教育背景",kind:"standard",entries:[{date:"2018.09—2022.06",organization:"示例大学",position:"计算机科学与技术 本科",bullets:[]}]},{title:"荣誉奖项",kind:"awards",entries:[{date:"2024.07",organization:"全国大学生智能应用创新竞赛一等奖",position:"",bullets:[]},{date:"2023.09",organization:"校一等奖学金、优秀研究生",position:"",bullets:[]}]}],pendingConfirmations:[]},
+        resumePresentation:null
       };
       const parameters = new URLSearchParams(location.search);
       if (parameters.get("resume") === "0") { demo.generateResume=false; demo.optimizedResume=null; }
+      if (parameters.get("legacy") === "1") demo.optimizedResume={sections:[{title:"旧版简历",items:["旧版内容"]}]};
+      if (parameters.get("photo") === "1") demo.resumePresentation={templateId:"classic-blue",showPhoto:true,photo:{fileName:"preview.png",updatedAt:new Date().toISOString(),dataUrl:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="}};
       if (parameters.get("fit") === "ready") {
         demo.analysis.readiness = { level:"ready", oneLiner:"当前简历已覆盖岗位核心要求，可以直接投递。", rationale:"现有项目与岗位方向一致，没有发现需要临时补齐的关键能力。", confidence:"high" };
         demo.analysis.gaps = [];
